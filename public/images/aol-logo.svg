@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="180" height="60" viewBox="0 0 180 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M90 30C90 46.5685 76.5685 60 60 60C43.4315 60 30 46.5685 30 30C30 13.4315 43.4315 0 60 0C76.5685 0 90 13.4315 90 30Z" fill="#FF9361"/>
+  <path d="M60 15C66.0751 15 71 19.9249 71 26C71 32.0751 66.0751 37 60 37C53.9249 37 49 32.0751 49 26C49 19.9249 53.9249 15 60 15Z" fill="white"/>
+  <path d="M60 45C53.9249 45 49 40.0751 49 34C49 27.9249 53.9249 23 60 23C66.0751 23 71 27.9249 71 34C71 40.0751 66.0751 45 60 45Z" fill="white"/>
+  <text x="100" y="35" font-family="Arial" font-size="20" font-weight="bold" fill="#333333">Art of Living</text>
+</svg> 

@@ -1,28 +1,104 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Art of Living - Sahaj Samadhi Meditation App
+
+A Next.js application for Art of Living's Sahaj Samadhi Meditation course purchase and confirmation flow. This app includes a secure checkout process with Stripe integration and a confirmation page.
+
+## Features
+
+- Course checkout page with Stripe Elements integration
+- User information collection form
+- Thank you / confirmation page after purchase
+- Responsive design for all device sizes
+- Integration with external API server
+
+## Technologies Used
+
+- Next.js 14 (Pages Router)
+- TypeScript
+- Tailwind CSS
+- ShadCN UI Components
+- Stripe Payment Integration
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ installed
+- npm or yarn package manager
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/your-username/aolf-meditation-app.git
+cd aolf-meditation-app
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Create a `.env.local` file in the root directory with the following variables:
+
+```env
+NEXT_PUBLIC_API_URL=https://api.artofliving.org
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_key
+```
+
+### Running the Development Server
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Deployment
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### Building for Production
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```bash
+npm run build
+# or
+yarn build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Starting Production Server
+
+```bash
+npm start
+# or
+yarn start
+```
+
+## Project Structure
+
+- `/src/pages` - Next.js pages
+  - `/checkout/[courseId].tsx` - Checkout page
+  - `/thankyou/[orderId].tsx` - Thank you page
+- `/src/components` - Reusable components
+- `/src/lib` - Utility functions and API clients
+- `/public` - Static assets
+
+## API Integration
+
+This application connects to an external API server for:
+
+1. Fetching course information
+2. Processing payments
+3. Retrieving order details
+
+The API endpoints used are:
+
+- `GET /api/courses/{courseId}` - Get course details
+- `GET /api/orders/{orderId}` - Get order details
+- `POST /api/checkout` - Process payment and create order
 
 ## Learn More
 
