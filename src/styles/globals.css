@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import 'pages/checkout-aol.css';
+@import 'pages/loader.css';
 
 :root {
   --background: #ffffff;

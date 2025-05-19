@@ -1,0 +1,45 @@
+.loading-overlay {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.loading-overlay.no-bg {
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+.loading-overlay .overlay-loader::before {
+      content: '';
+      display: block;
+      width: 36px;
+      height: 36px;
+      border-radius: 36px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #ed7347 #ed7347 #ed7347 transparent;
+      animation: loader-ring 1.2s linear infinite;
+    }
+.loading-overlay .loading-text {
+color: #808183;
+margin-top: 10px;
+text-align: center;
+}
+
+@keyframes loader-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

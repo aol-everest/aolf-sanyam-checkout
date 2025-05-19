@@ -1,13 +1,13 @@
-import * as React from 'react';
+import * as React from "react";
 import {
   FormField,
   FormItem,
   FormMessage,
   FormikFormValues,
   FormFieldProps,
-} from '@/components/ui/formik-form';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/formik-form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,12 +20,13 @@ import { US_STATES } from "@/components/checkout/constants";
 import type { CourseData } from "@/lib/api";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
+import { Loader } from "@/components/loader";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { Checkbox } from "@/components/ui/checkbox";
 // Import the StripeCardWrapper for when we need to reference it
-import { StripeCardWrapper } from '@/components/checkout/StripeCardWrapper';
-import { ProgramQuestionnaire } from '@/components/checkout/ProgramQuestionnaire';
+import { StripeCardWrapper } from "@/components/checkout/StripeCardWrapper";
+import { ProgramQuestionnaire } from "@/components/checkout/ProgramQuestionnaire";
 
 interface ResidentialAddOnProduct {
   sfid: string;
@@ -66,7 +67,7 @@ interface MainContentProps {
   loading: boolean;
   course: CourseData & {
     groupedAddOnProducts: {
-      'Residential Add On': ResidentialAddOnProduct[];
+      "Residential Add On": ResidentialAddOnProduct[];
     };
   };
   setQuestionnaireAnswers: React.Dispatch<
@@ -76,9 +77,9 @@ interface MainContentProps {
 
 // Helper function to format time
 const formatTime = (time: string) => {
-  const [hours, minutes] = time.split(':');
+  const [hours, minutes] = time.split(":");
   const hour = parseInt(hours);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const ampm = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 || 12;
   return `${hour12}:${minutes}${ampm}`;
 };
@@ -88,8 +89,8 @@ const formatDateRange = (startDate: string, endDate: string) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  const startMonth = start.toLocaleString('en-US', { month: 'long' });
-  const endMonth = end.toLocaleString('en-US', { month: 'long' });
+  const startMonth = start.toLocaleString("en-US", { month: "long" });
+  const endMonth = end.toLocaleString("en-US", { month: "long" });
   const startDay = start.getDate();
   const endDay = end.getDate();
   const year = start.getFullYear();
@@ -115,7 +116,7 @@ export const MainContent = ({
 }: MainContentProps) => {
   const coursePrice = course.payment?.pricing?.price?.unitPrice || 0;
   const selectedExpenseType = course.groupedAddOnProducts[
-    'Residential Add On'
+    "Residential Add On"
   ].find((product) => product.sfid === formik.values.expenseType);
   const totalPrice = coursePrice + (selectedExpenseType?.unitPrice || 0);
 
@@ -136,23 +137,23 @@ export const MainContent = ({
 
     // Touch all fields to trigger validation display
     Object.keys(mainFormValues).forEach((fieldName) => {
-      if (typeof formik.setFieldTouched === 'function') {
+      if (typeof formik.setFieldTouched === "function") {
         formik.setFieldTouched(fieldName, true, false);
       }
     });
 
     // Check required fields in main form (this is a basic validation)
     const requiredFields = [
-      'firstName',
-      'lastName',
-      'email',
-      'phone',
-      'address',
-      'city',
-      'state',
-      'zip',
-      'expenseType',
-      'agreeTerms',
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "address",
+      "city",
+      "state",
+      "zip",
+      "expenseType",
+      "agreeTerms",
     ];
     requiredFields.forEach((field) => {
       const value = (mainFormValues as Record<string, unknown>)[field];
@@ -190,8 +191,8 @@ export const MainContent = ({
     });
 
     // Update the main formik form with the questionnaire answers
-    if (typeof formik.setFieldValue === 'function') {
-      formik.setFieldValue('programQuestionnaire', programQuestionnaireValues);
+    if (typeof formik.setFieldValue === "function") {
+      formik.setFieldValue("programQuestionnaire", programQuestionnaireValues);
     }
 
     // Proceed with form submission including questionnaire answers
@@ -200,6 +201,7 @@ export const MainContent = ({
 
   return (
     <>
+      <Loader></Loader>
       <main className="checkout-aol">
         <div className="container">
           <div className="row">
@@ -223,8 +225,8 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="firstName" />
@@ -243,8 +245,8 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="lastName" />
@@ -263,8 +265,8 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="address" />
@@ -283,8 +285,8 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="city" />
@@ -300,15 +302,15 @@ export const MainContent = ({
                             <Select
                               value={field.value}
                               onValueChange={(value) =>
-                                form.setFieldValue('state', value)
+                                form.setFieldValue("state", value)
                               }
                             >
                               <SelectTrigger
                                 className={`${
                                   form.touched[field.name] &&
                                   form.errors[field.name]
-                                    ? 'border-red-500'
-                                    : ''
+                                    ? "border-red-500"
+                                    : ""
                                 }`}
                               >
                                 <SelectValue placeholder="State" />
@@ -340,8 +342,8 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="zip" />
@@ -362,8 +364,8 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="email" />
@@ -382,14 +384,14 @@ export const MainContent = ({
                                 defaultCountry="US"
                                 value={field.value}
                                 onChange={(value) => {
-                                  form.setFieldValue('phone', value || '');
-                                  form.setFieldTouched('phone', true, false);
+                                  form.setFieldValue("phone", value || "");
+                                  form.setFieldTouched("phone", true, false);
                                 }}
                                 className={`input-div ${
                                   form.touched[field.name] &&
                                   form.errors[field.name]
-                                    ? 'border-red-500'
-                                    : ''
+                                    ? "border-red-500"
+                                    : ""
                                 }`}
                               />
                             </div>
@@ -434,7 +436,7 @@ export const MainContent = ({
                   <div className="note-content">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: course?.course?.notes || '',
+                        __html: course?.course?.notes || "",
                       }}
                     />
                   </div>
@@ -481,7 +483,7 @@ export const MainContent = ({
                         <Select
                           value={field.value}
                           onValueChange={(value) =>
-                            form.setFieldValue('expenseType', value)
+                            form.setFieldValue("expenseType", value)
                           }
                         >
                           <SelectTrigger>
@@ -489,7 +491,7 @@ export const MainContent = ({
                           </SelectTrigger>
                           <SelectContent>
                             {course.groupedAddOnProducts[
-                              'Residential Add On'
+                              "Residential Add On"
                             ].map((option) => (
                               <SelectItem
                                 key={option.sfid}
@@ -497,7 +499,7 @@ export const MainContent = ({
                                 disabled={option.isFull}
                               >
                                 {option.name} - ${option.unitPrice}
-                                {option.isFull ? ' (FULL)' : ''}
+                                {option.isFull ? " (FULL)" : ""}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -650,8 +652,8 @@ export const MainContent = ({
                           {course.timings.map((timing) => (
                             <div key={timing.id}>
                               {new Date(timing.startDate).toLocaleDateString(
-                                'en-US',
-                                { weekday: 'short' }
+                                "en-US",
+                                { weekday: "short" }
                               )}
                               : {formatTime(timing.startTime)}-
                               {formatTime(timing.endTime)} {timing.timeZone}
@@ -722,8 +724,8 @@ export const MainContent = ({
                             href={course.location.center?.centerUrl}
                             className="text-[#FF9361]"
                           >
-                            {course.location.street}, {course.location.city},{' '}
-                            {course.location.province}{' '}
+                            {course.location.street}, {course.location.city},{" "}
+                            {course.location.province}{" "}
                             {course.location.postalCode}
                           </a>
                         </div>
@@ -770,7 +772,7 @@ export const MainContent = ({
                               checked={field.value}
                               onCheckedChange={(checked) => {
                                 form.setFieldValue(
-                                  'agreeTerms',
+                                  "agreeTerms",
                                   Boolean(checked)
                                 );
                               }}
@@ -779,7 +781,7 @@ export const MainContent = ({
                               htmlFor="agreeTerms"
                               className="cursor-pointer"
                             >
-                              I agree to the{' '}
+                              I agree to the{" "}
                               <a href="#" className="text-[#FF9361]">
                                 Program Participant agreement
                               </a>
@@ -834,7 +836,7 @@ export const MainContent = ({
                       </FormField>
                     ))}
                     <div className="note">
-                      For any health related questions, please contact us at{' '}
+                      For any health related questions, please contact us at{" "}
                       <a
                         href="mailto:health.info@us.artofliving.org"
                         className="text-[#FF9361]"
@@ -855,7 +857,7 @@ export const MainContent = ({
                             Processing...
                           </>
                         ) : (
-                          'Confirm and Pay'
+                          "Confirm and Pay"
                         )}
                       </Button>
                     </div>
