@@ -1,19 +1,10 @@
 import * as React from 'react';
-// Dialog components commented out for debugging purposes
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogDescription,
-// } from '@/components/ui/dialog';
 import {
   FormField,
   FormItem,
   FormMessage,
   FormikFormValues,
   FormFieldProps,
-  FormikProps,
 } from '@/components/ui/formik-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +25,7 @@ import 'react-phone-number-input/style.css';
 import { Checkbox } from '@/components/ui/checkbox';
 // Import the StripeCardWrapper for when we need to reference it
 import { StripeCardWrapper } from '@/components/checkout/StripeCardWrapper';
+import { ProgramQuestionnaire } from '@/components/checkout/ProgramQuestionnaire';
 
 interface ResidentialAddOnProduct {
   sfid: string;
@@ -53,7 +45,16 @@ interface ResidentialAddOnProduct {
 }
 
 interface MainContentProps {
-  formik: Pick<FormikProps<FormikFormValues>, 'handleSubmit' | 'values'>;
+  formik: {
+    handleSubmit: () => void;
+    values: FormikFormValues;
+    setFieldError?: (field: string, message: string) => void;
+    setFieldTouched?: (
+      field: string,
+      isTouched: boolean,
+      shouldValidate?: boolean
+    ) => void;
+  };
   showQuestionnaire: boolean;
   setShowQuestionnaire: (show: boolean) => void;
   onQuestionnaireSubmit: (values: FormikFormValues) => void | Promise<void>;
@@ -112,6 +113,83 @@ export const MainContent = ({
     'Residential Add On'
   ].find((product) => product.sfid === formik.values.expenseType);
   const totalPrice = coursePrice + (selectedExpenseType?.unitPrice || 0);
+
+  // State for controlling the questionnaire dialog
+  const [questionnaireOpen, setQuestionnaireOpen] = React.useState(false);
+  const [questionnaireAnswers, setQuestionnaireAnswers] = React.useState<
+    Record<string, string>
+  >({});
+
+  // Handle "Confirm and Pay" button click
+  const handleConfirmAndPay = () => {
+    // Get a copy of all form values except programQuestionnaire
+    const mainFormValues = { ...formik.values };
+    delete mainFormValues.programQuestionnaire;
+
+    // Flag to track validation
+    let hasMainFormErrors = false;
+
+    // Touch all fields to trigger validation display
+    Object.keys(mainFormValues).forEach((fieldName) => {
+      if (typeof formik.setFieldTouched === 'function') {
+        formik.setFieldTouched(fieldName, true, false);
+      }
+    });
+
+    // Check required fields in main form (this is a basic validation)
+    const requiredFields = [
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'address',
+      'city',
+      'state',
+      'zip',
+      'expenseType',
+      'agreeTerms',
+    ];
+    requiredFields.forEach((field) => {
+      const value = (mainFormValues as Record<string, unknown>)[field];
+      if (!value) {
+        hasMainFormErrors = true;
+      }
+    });
+
+    // Simple email validation
+    if (mainFormValues.email && !/\S+@\S+\.\S+/.test(mainFormValues.email)) {
+      hasMainFormErrors = true;
+    }
+
+    // Force form validation via submit if there are errors
+    if (hasMainFormErrors) {
+      formik.handleSubmit();
+    } else {
+      // If main form is valid, show the questionnaire
+      setQuestionnaireOpen(true);
+    }
+  };
+
+  // Handle questionnaire submission
+  const handleQuestionnaireSubmit = (values: Record<string, string>) => {
+    // Store the questionnaire answers
+    setQuestionnaireAnswers(values);
+
+    // Here you would combine the main form data with the questionnaire data
+    // and submit the final payload
+
+    // For this example, we'll just submit the main form
+    // In a real application, you would combine both forms' data
+    const combinedFormValues = {
+      ...formik.values,
+      programQuestionnaire: values,
+    };
+
+    console.log('Combined form data:', combinedFormValues);
+
+    // Proceed with form submission including questionnaire answers
+    formik.handleSubmit();
+  };
 
   return (
     <>
@@ -308,113 +386,37 @@ export const MainContent = ({
                       </FormField>
                     </div>
 
+                    {/* Program questionnaire indicator */}
                     {course.programQuestionnaire &&
                       course.programQuestionnaire.length > 0 && (
                         <div className="border-t pt-4 mt-4">
-                          <h3 className="text-lg font-medium mb-4">
-                            Program Questionnaire
-                          </h3>
-                          <div className="space-y-4">
-                            {course.programQuestionnaire.map((question) => (
-                              <FormField
-                                key={question.sfid}
-                                name={`programQuestionnaire.${question.sfid}`}
-                              >
-                                {({ field, form }: FormFieldProps<string>) => {
-                                  // Explicitly check for errors and touched state
-                                  const fieldName = `programQuestionnaire.${question.sfid}`;
-
-                                  return (
-                                    <FormItem className="space-y-3">
-                                      <div
-                                        className="font-medium"
-                                        dangerouslySetInnerHTML={{
-                                          __html: question.question,
-                                        }}
-                                      />
-                                      {question.isRequired && (
-                                        <span className="text-red-500 ml-1">
-                                          *
-                                        </span>
-                                      )}
-                                      <div className="flex items-center space-x-6">
-                                        <div className="flex items-center space-x-2">
-                                          <input
-                                            type="radio"
-                                            id={`${question.sfid}-yes`}
-                                            name={fieldName}
-                                            value="Yes"
-                                            checked={field.value === 'Yes'}
-                                            onChange={() => {
-                                              form.setFieldValue(
-                                                fieldName,
-                                                'Yes'
-                                              );
-                                              form.setFieldTouched(
-                                                fieldName,
-                                                true,
-                                                true
-                                              );
-                                            }}
-                                            className="h-4 w-4 border-gray-300 text-[#FF9361] focus:ring-[#FF9361]"
-                                          />
-                                          <Label
-                                            htmlFor={`${question.sfid}-yes`}
-                                            className="cursor-pointer"
-                                          >
-                                            Yes
-                                          </Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                          <input
-                                            type="radio"
-                                            id={`${question.sfid}-no`}
-                                            name={fieldName}
-                                            value="No"
-                                            checked={field.value === 'No'}
-                                            onChange={() => {
-                                              form.setFieldValue(
-                                                fieldName,
-                                                'No'
-                                              );
-                                              form.setFieldTouched(
-                                                fieldName,
-                                                true,
-                                                true
-                                              );
-                                            }}
-                                            className="h-4 w-4 border-gray-300 text-[#FF9361] focus:ring-[#FF9361]"
-                                          />
-                                          <Label
-                                            htmlFor={`${question.sfid}-no`}
-                                            className="cursor-pointer"
-                                          >
-                                            No
-                                          </Label>
-                                        </div>
-                                      </div>
-
-                                      {/* Use FormMessage component to show validation errors */}
-                                      <FormMessage
-                                        name="programQuestionnaire"
-                                        innerKey={question.sfid}
-                                      />
-
-                                      {/* Show error if question is required but no answer selected */}
-                                      {question.isRequired &&
-                                        !field.value &&
-                                        form.submitCount > 0 && (
-                                          <div className="text-sm text-red-500">
-                                            This question is required
-                                          </div>
-                                        )}
-                                    </FormItem>
-                                  );
-                                }}
-                              </FormField>
-                            ))}
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-medium">
+                              Program Questionnaire
+                            </h3>
+                            <div className="text-sm text-gray-500">
+                              Will be shown after form validation
+                            </div>
                           </div>
+                          <p className="text-sm text-gray-500 mt-2">
+                            Please fill out all required fields and click
+                            &ldquo;Confirm and Pay&rdquo;. You&apos;ll be asked
+                            to complete the program questionnaire before
+                            finalizing your payment.
+                          </p>
                         </div>
+                      )}
+
+                    {/* The ProgramQuestionnaire dialog */}
+                    {course.programQuestionnaire &&
+                      course.programQuestionnaire.length > 0 && (
+                        <ProgramQuestionnaire
+                          questions={course.programQuestionnaire}
+                          open={questionnaireOpen}
+                          onOpenChange={setQuestionnaireOpen}
+                          onSubmit={handleQuestionnaireSubmit}
+                          initialValues={questionnaireAnswers}
+                        />
                       )}
 
                     <div className="space-y-4">
@@ -659,7 +661,7 @@ export const MainContent = ({
                     type="button"
                     className="w-full bg-[#FF9361] hover:bg-[#ff7a3d] mt-4"
                     disabled={loading}
-                    onClick={() => formik.handleSubmit()}
+                    onClick={handleConfirmAndPay}
                   >
                     {loading ? (
                       <>
