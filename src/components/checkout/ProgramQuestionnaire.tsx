@@ -25,13 +25,13 @@ import { Loader2 } from 'lucide-react';
 // Define the question type that's used in the Course
 interface ProgramQuestionItem {
   sfid: string;
-  name?: string;
+  name: string;
   question: string;
-  options?: string | null;
+  options: string | null;
   questionType: string;
-  questionCategory?: string;
+  questionCategory: string;
   isRequired: boolean;
-  sequence?: number;
+  sequence: number;
 }
 
 // Interface for questionnaire form values

@@ -386,27 +386,6 @@ export const MainContent = ({
                       </FormField>
                     </div>
 
-                    {/* Program questionnaire indicator */}
-                    {course.programQuestionnaire &&
-                      course.programQuestionnaire.length > 0 && (
-                        <div className="border-t pt-4 mt-4">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-medium">
-                              Program Questionnaire
-                            </h3>
-                            <div className="text-sm text-gray-500">
-                              Will be shown after form validation
-                            </div>
-                          </div>
-                          <p className="text-sm text-gray-500 mt-2">
-                            Please fill out all required fields and click
-                            &ldquo;Confirm and Pay&rdquo;. You&apos;ll be asked
-                            to complete the program questionnaire before
-                            finalizing your payment.
-                          </p>
-                        </div>
-                      )}
-
                     {/* The ProgramQuestionnaire dialog */}
                     {course.programQuestionnaire &&
                       course.programQuestionnaire.length > 0 && (
@@ -428,7 +407,7 @@ export const MainContent = ({
                 </div>
               </div>
 
-              {course.notes && (
+              {course?.course?.notes && (
                 <div className="bg-white rounded-xl shadow-sm p-8 mt-8">
                   <div className="flex items-center gap-2 mb-4">
                     <svg
@@ -450,7 +429,11 @@ export const MainContent = ({
                   </div>
 
                   <div className="space-y-6 text-sm">
-                    <div dangerouslySetInnerHTML={{ __html: course.notes }} />
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: course?.course?.notes || '',
+                      }}
+                    />
                   </div>
                 </div>
               )}

@@ -160,13 +160,30 @@ export interface CourseData {
   timings: CourseTiming[];
   programQuestionnaire?: Array<{
     sfid: string;
+    name: string;
     question: string;
+    options: string | null;
     questionType: string;
+    questionCategory: string;
     isRequired: boolean;
+    sequence: number;
   }>;
   complianceQuestionnaire?: ComplianceQuestion[];
   groupedAddOnProducts: {
     'Residential Add On': ResidentialAddOn[];
+  };
+  course?: {
+    notes?: string;
+    prerequisite?: string[];
+    isMandatoryTypeWorkshop?: boolean;
+    mandatoryWorkshopTakenRequired?: boolean;
+    masterCourseType?: string;
+    visibility?: string | null;
+    org?: string;
+    isCorporateEvent?: boolean;
+    ctypeId?: string;
+    childCtypeIds?: string[] | null;
+    coverImage?: string;
   };
 }
 
