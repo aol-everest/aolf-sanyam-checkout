@@ -1,10 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { fetchOrder, type OrderData } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { fetchOrder, type OrderData } from '@/lib/api';
 
 export async function getServerSideProps({
   params,
@@ -20,7 +17,7 @@ export async function getServerSideProps({
       },
     };
   } catch (error) {
-    console.error("Error fetching order in getServerSideProps:", error);
+    console.error('Error fetching order in getServerSideProps:', error);
     return {
       props: {
         orderId: params.orderId,
@@ -47,7 +44,7 @@ export default function ThankYouPage({
         const data = await fetchOrder(orderId);
         setOrder(data);
       } catch (error) {
-        console.error("Failed to load order", error);
+        console.error('Failed to load order', error);
       } finally {
         setLoading(false);
       }
@@ -72,12 +69,12 @@ export default function ThankYouPage({
             <div className="row align-items-center">
               <div className="col-lg-5 col-md-12 p-md-0">
                 <div className="get-started__info">
-                  <h3 className="get-started__subtitle">You’re going!</h3>
+                  <h3 className="get-started__subtitle">You're going!</h3>
                   <h1 className="get-started__title section-title">
                     {order.courseTitle}
                   </h1>
                   <p className="get-started__text">
-                    You&apos;re registered for {order.courseTitle}, from Fri,{" "}
+                    You&apos;re registered for {order.courseTitle}, from Fri,{' '}
                     {order.courseDate}
                   </p>
                   <a className="get-started__link" href="#">
@@ -161,7 +158,7 @@ export default function ThankYouPage({
                   rel="noreferrer"
                 >
                   <li className="tw-truncate tw-text-sm tw-tracking-tighter !tw-text-[#3d8be8]">
-                    949 Whispering Hills Road,{" "}
+                    949 Whispering Hills Road,{' '}
                   </li>
                   <li className="tw-truncate tw-text-sm tw-tracking-tighter !tw-text-[#3d8be8]">
                     Boone, NC 28607
@@ -179,7 +176,7 @@ export default function ThankYouPage({
               <div className="journey-starts__detail">
                 <h3 className="journey-starts__step-title">This is you-time</h3>
                 <p className="journey-starts__step-text">
-                  It’s a great time to clear your calendar for your retreat. Get
+                  It's a great time to clear your calendar for your retreat. Get
                   ready to drop stress, recharge your batteries, and re-align
                   with your inner truth.
                 </p>
@@ -194,7 +191,7 @@ export default function ThankYouPage({
                   Health And Safety
                 </h3>
                 <p className="journey-starts__step-text">
-                  For the health and safety of all involved, if you’re not
+                  For the health and safety of all involved, if you're not
                   feeling well, we ask you to please stay at home.
                 </p>
               </div>
