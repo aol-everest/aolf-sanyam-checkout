@@ -595,44 +595,10 @@ export const CheckoutFormWithStripe = ({
               values.programQuestionnaire
             );
 
-            // Add validation for program questionnaire if not already present
-            if (!errors.programQuestionnaire && values.programQuestionnaire) {
-              errors.programQuestionnaire = {} as Record<string, string>;
-
-              // Check each question and add error if empty
-              Object.entries(values.programQuestionnaire).forEach(
-                ([key, value]) => {
-                  // Find the question in course data
-                  const question = course.programQuestionnaire?.find(
-                    (q) => q.sfid === key
-                  );
-
-                  // Only validate required questions
-                  if (question?.isRequired && (!value || value === '')) {
-                    console.log(
-                      `Adding validation error for program question ${key}`
-                    );
-                    (errors.programQuestionnaire as Record<string, string>)[
-                      key
-                    ] = 'This question is required';
-                  }
-                }
-              );
-
-              // If we added any errors, log them
-              const programErrors = errors.programQuestionnaire as Record<
-                string,
-                string
-              >;
-              if (Object.keys(programErrors).length > 0) {
-                console.log(
-                  'Added programQuestionnaire errors:',
-                  programErrors
-                );
-              } else {
-                // If no errors were added, remove the empty object
-                delete errors.programQuestionnaire;
-              }
+            // Skip validation for programQuestionnaire as it's handled separately
+            // in the ProgramQuestionnaire component
+            if (errors.programQuestionnaire) {
+              delete errors.programQuestionnaire;
             }
 
             // Collect all error messages
@@ -643,44 +609,7 @@ export const CheckoutFormWithStripe = ({
               if (typeof message === 'string') {
                 errorMessages.push(`${field}: ${message}`);
               }
-
-              // Special handling for programQuestionnaire object
-              if (field === 'programQuestionnaire') {
-                console.log('Found programQuestionnaire errors:', message);
-              }
             });
-
-            // Process nested errors in programQuestionnaire if any
-            if (
-              errors.programQuestionnaire &&
-              typeof errors.programQuestionnaire === 'object'
-            ) {
-              console.log(
-                'Processing program questionnaire errors:',
-                errors.programQuestionnaire
-              );
-              Object.entries(errors.programQuestionnaire).forEach(
-                ([field, message]) => {
-                  if (typeof message === 'string') {
-                    // Get question data from course if available
-                    const questionData = course.programQuestionnaire?.find(
-                      (q) => q.sfid === field
-                    );
-                    const questionLabel = questionData
-                      ? `Question: ${questionData.question
-                          .replace(/<[^>]*>?/gm, '')
-                          .substring(0, 50)}...`
-                      : `Question ${field}`;
-
-                    const errorMessage = `${questionLabel}: ${message}`;
-                    console.log(
-                      `Adding program questionnaire error: ${errorMessage}`
-                    );
-                    errorMessages.push(errorMessage);
-                  }
-                }
-              );
-            }
 
             // Process nested errors in complianceAnswers if any
             if (
