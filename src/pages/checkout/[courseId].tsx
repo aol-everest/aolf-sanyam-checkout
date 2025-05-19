@@ -1,23 +1,23 @@
-import { useEffect, useState } from "react";
-import ErrorPage from "next/error";
-import { FullScreenLoader } from "@/components/ui/loader";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe, Stripe } from "@stripe/stripe-js";
-import { fetchCourse, type CourseData } from "@/lib/api";
-import { Toaster } from "@/components/ui/toaster";
-import { CheckoutFormWithStripe } from "@/components/checkout/CheckoutFormWithStripe";
-import type { GetServerSideProps } from "next";
-import { GoogleReCaptchaProvider } from "@google-recaptcha/react";
+import { useEffect, useState } from 'react';
+import ErrorPage from 'next/error';
+import { FullScreenLoader } from '@/components/ui/loader';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { fetchCourse, type CourseData } from '@/lib/api';
+import { Toaster } from '@/components/ui/toaster';
+import { CheckoutFormWithStripe } from '@/components/checkout/CheckoutFormWithStripe';
+import type { GetServerSideProps } from 'next';
+import { GoogleReCaptchaProvider } from '@google-recaptcha/react';
 
 // Log that Stripe will be initialized with the key from API
-console.log("Stripe will be initialized with key from API");
+console.log('Stripe will be initialized with key from API');
 
 // reCAPTCHA site key - replace with your actual site key
 const RECAPTCHA_SITE_KEY =
   process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ||
-  (process.env.NODE_ENV === "development"
-    ? "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // Google's test key
-    : ""); // Empty string fallback (though this should never happen in production)
+  (process.env.NODE_ENV === 'development'
+    ? '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' // Google's test key
+    : ''); // Empty string fallback (though this should never happen in production)
 
 const CheckoutPage = ({
   course: initialCourse,
@@ -26,7 +26,7 @@ const CheckoutPage = ({
   course?: CourseData;
   courseId: string;
 }): JSX.Element => {
-  console.log("[CheckoutPage] Props:", { initialCourse, courseId });
+  console.log('[CheckoutPage] Props:', { initialCourse, courseId });
 
   const [course, setCourse] = useState<CourseData | null>(
     initialCourse || null
@@ -48,21 +48,21 @@ const CheckoutPage = ({
   // Initialize Stripe when course data is available
   useEffect(() => {
     if (course) {
-      console.log("[CheckoutPage] Course payment data:", course.payment);
+      console.log('[CheckoutPage] Course payment data:', course.payment);
 
       // Ensure publishable key exists and initialize Stripe
       if (course.payment?.publishableKey) {
         console.log(
-          "[CheckoutPage] Found publishable key:",
+          '[CheckoutPage] Found publishable key:',
           course.payment.publishableKey
         );
         setStripePromise(loadStripe(course.payment.publishableKey));
       } else {
-        console.error("[CheckoutPage] No publishable key found in course data");
+        console.error('[CheckoutPage] No publishable key found in course data');
         // Fallback to a default key if needed
         const fallbackKey =
-          "pk_test_51LnTljH6DOp7WA3cYAlemahUkCBTv94b8Cv0laMT4lnEtYShNGSScumTN0oLymu54H2b6TKzPstIaihee4pRrswn00yKstyPbS";
-        console.log("[CheckoutPage] Using fallback key");
+          'pk_test_51LnTljH6DOp7WA3cYAlemahUkCBTv94b8Cv0laMT4lnEtYShNGSScumTN0oLymu54H2b6TKzPstIaihee4pRrswn00yKstyPbS';
+        console.log('[CheckoutPage] Using fallback key');
         setStripePromise(loadStripe(fallbackKey));
       }
     }
@@ -70,18 +70,18 @@ const CheckoutPage = ({
 
   useEffect(() => {
     if (initialCourse) {
-      console.log("[CheckoutPage] Using initial course data");
+      console.log('[CheckoutPage] Using initial course data');
       return;
     }
 
     const loadCourse = async () => {
       try {
-        console.log("[CheckoutPage] Fetching course data for:", courseId);
+        console.log('[CheckoutPage] Fetching course data for:', courseId);
         const data = await fetchCourse(courseId);
-        console.log("[CheckoutPage] Fetched course data:", data);
+        console.log('[CheckoutPage] Fetched course data:', data);
         setCourse(data);
       } catch (error) {
-        console.error("[CheckoutPage] Failed to load course:", error);
+        console.error('[CheckoutPage] Failed to load course:', error);
       } finally {
         setLoading(false);
       }
@@ -91,12 +91,12 @@ const CheckoutPage = ({
   }, [courseId, initialCourse]);
 
   if (loading) {
-    console.log("[CheckoutPage] Loading course details...");
+    console.log('[CheckoutPage] Loading course details...');
     return <FullScreenLoader message="Loading course details..." />;
   }
 
   if (!course) {
-    console.log("[CheckoutPage] Course not found");
+    console.log('[CheckoutPage] Course not found');
     return <ErrorPage statusCode={404} title="Course Not Found" />;
   }
 
@@ -104,7 +104,7 @@ const CheckoutPage = ({
     return <FullScreenLoader message="Initializing payment system..." />;
   }
 
-  console.log("[CheckoutPage] Rendering checkout form with Stripe");
+  console.log('[CheckoutPage] Rendering checkout form with Stripe');
   return (
     <GoogleReCaptchaProvider siteKey={RECAPTCHA_SITE_KEY} type="v3">
       <div>
@@ -114,30 +114,25 @@ const CheckoutPage = ({
             fonts: [
               {
                 cssSrc:
-                  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap",
+                  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
               },
             ],
             appearance: {
-              theme: "stripe",
+              theme: 'stripe',
               variables: {
-                colorPrimary: "#FF9361",
-                colorBackground: "#ffffff",
-                colorText: "#424770",
-                colorDanger: "#9e2146",
-                fontFamily: "Inter, system-ui, sans-serif",
-                spacingUnit: "4px",
-                borderRadius: "4px",
+                colorPrimary: '#FF9361',
+                colorBackground: '#ffffff',
+                colorText: '#424770',
+                colorDanger: '#9e2146',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                spacingUnit: '4px',
+                borderRadius: '4px',
               },
             },
-            loader: "auto",
+            loader: 'auto',
           }}
         >
           <div className="">
-            <div className="flex flex-col items-center mb-8">
-              <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-900 font-inter">
-                {course.title}
-              </h1>
-            </div>
             {/* StripeCardWrapper is already inside the main content */}
             <CheckoutFormWithStripe
               course={course}
@@ -158,11 +153,11 @@ const CheckoutPage = ({
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { courseId } = context.params as { courseId: string };
-  console.log("[getServerSideProps] Fetching course:", courseId);
+  console.log('[getServerSideProps] Fetching course:', courseId);
 
   try {
     const course = await fetchCourse(courseId);
-    console.log("[getServerSideProps] Fetched course:", course);
+    console.log('[getServerSideProps] Fetched course:', course);
     return {
       props: {
         course,
@@ -170,7 +165,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   } catch (error) {
-    console.error("[getServerSideProps] Failed to fetch course:", error);
+    console.error('[getServerSideProps] Failed to fetch course:', error);
     return {
       props: {
         courseId,

@@ -205,7 +205,7 @@ export const MainContent = ({
           <div className="row">
             <div className="col-12 col-lg-7">
               <div className="section--title">
-                <h1 className="page-title">Sanyam- 2</h1>
+                <h1 className="page-title">{course.title}</h1>
                 <div className="description"></div>
               </div>
               <div className="section-box account-details">
