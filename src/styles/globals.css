@@ -2,19 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'pages/checkout-aol.css';
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
   --aol-orange: #ff9361; /* Art of Living orange from the image */
   --aol-orange-light: #ffb591; /* Lighter shade for hover */
   --aol-orange-dark: #e86e35; /* Darker shade for active/pressed */
-  --font-family: Arial, Helvetica, sans-serif;
+  --font-family: 'Work Sans', sans-serif;
+  --font-heading: 'Lora', serif;
+}
+
+.font-lora, h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+.border-primary {
+  border-color: var(--aol-orange) !important;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-family);
+}
+
+.container {
+  max-width: 1140px;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 60px;
+    border-bottom: 1px solid #e9e9e9;
+    background: #fff;
 }
 
 /* Phone Input Styles */
