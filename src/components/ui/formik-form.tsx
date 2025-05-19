@@ -87,25 +87,16 @@ export const formikValidationSchema = Yup.object().shape({
     return Yup.object().shape(shape);
   }),
   programQuestionnaire: Yup.lazy((obj) => {
+    // We're moving the detailed validation to the ProgramQuestionnaire component
+    // Just do minimal validation here
     if (!obj || Object.keys(obj).length === 0) return Yup.object();
 
-    // We need a schema that validates each field
+    // Only validate that fields are present, not their specific format
+    // since that will be handled in the ProgramQuestionnaire component
     const shape = Object.keys(obj).reduce<Record<string, Yup.AnySchema>>(
       (acc, key) => {
-        // Make all fields required
-        acc[key] = Yup.string()
-          .required('This question is required')
-          .test('required-test', 'This question is required', (value) => {
-            console.log(`Validating programQuestionnaire.${key}:`, {
-              value,
-              type: typeof value,
-              isEmpty: value === '' || value === undefined,
-              isValid: value === 'Yes' || value === 'No',
-            });
-
-            // Only Yes or No are valid answers
-            return value === 'Yes' || value === 'No';
-          });
+        // Mark fields as required if they exist in the object
+        acc[key] = Yup.string().required('This question is required');
         return acc;
       },
       {}

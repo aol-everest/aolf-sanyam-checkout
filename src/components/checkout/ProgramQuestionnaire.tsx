@@ -58,14 +58,51 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
 
   // Create validation schema based on required questions
   const validationSchema = React.useMemo(() => {
-    const schemaShape: Record<string, Yup.StringSchema> = {};
+    const schemaShape: Record<string, Yup.AnySchema> = {};
 
     if (questions && questions.length > 0) {
       questions.forEach((question) => {
         if (question.isRequired) {
-          schemaShape[question.sfid] = Yup.string().required(
-            'This question is required'
-          );
+          // Create specific validation rules based on question type
+          if (question.questionType === 'Yes/No') {
+            // Yes/No questions must be either "Yes" or "No"
+            schemaShape[question.sfid] = Yup.string()
+              .required('This question is required')
+              .test('yes-no-test', 'Please select Yes or No', (value) => {
+                console.log(`Validating Yes/No question ${question.sfid}:`, {
+                  value,
+                  isValid: value === 'Yes' || value === 'No',
+                });
+                return value === 'Yes' || value === 'No';
+              });
+          } else if (question.questionType === 'Text') {
+            // Text questions just need to be non-empty
+            schemaShape[question.sfid] = Yup.string()
+              .required('This question is required')
+              .test('text-test', 'This question is required', (value) => {
+                console.log(`Validating Text question ${question.sfid}:`, {
+                  value,
+                  isValid: !!value && value.trim() !== '',
+                });
+                return !!value && value.trim() !== '';
+              });
+          } else if (question.questionType === 'Picklist') {
+            // Picklist questions must have a selected value
+            schemaShape[question.sfid] = Yup.string()
+              .required('This question is required')
+              .test('picklist-test', 'Please select an option', (value) => {
+                console.log(`Validating Picklist question ${question.sfid}:`, {
+                  value,
+                  isValid: !!value && value.trim() !== '',
+                });
+                return !!value && value.trim() !== '';
+              });
+          } else {
+            // Default validation for other types
+            schemaShape[question.sfid] = Yup.string().required(
+              'This question is required'
+            );
+          }
         }
       });
     }

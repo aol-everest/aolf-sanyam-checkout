@@ -54,6 +54,11 @@ interface MainContentProps {
       isTouched: boolean,
       shouldValidate?: boolean
     ) => void;
+    setFieldValue?: (
+      field: string,
+      value: unknown,
+      shouldValidate?: boolean
+    ) => void;
   };
   showQuestionnaire: boolean;
   setShowQuestionnaire: (show: boolean) => void;
@@ -175,17 +180,24 @@ export const MainContent = ({
     // Store the questionnaire answers
     setQuestionnaireAnswers(values);
 
-    // Here you would combine the main form data with the questionnaire data
-    // and submit the final payload
+    // Here we need to update the main formik form with the questionnaire answers
+    // Format the values to match the expected structure in the main form
+    const programQuestionnaireValues: Record<string, string> = {};
 
-    // For this example, we'll just submit the main form
-    // In a real application, you would combine both forms' data
-    const combinedFormValues = {
+    // Get the values from the questionnaire form and format them for the main form
+    Object.keys(values).forEach((sfid) => {
+      programQuestionnaireValues[sfid] = values[sfid];
+    });
+
+    // Update the main formik form with the questionnaire answers
+    if (typeof formik.setFieldValue === 'function') {
+      formik.setFieldValue('programQuestionnaire', programQuestionnaireValues);
+    }
+
+    console.log('Combined form data:', {
       ...formik.values,
-      programQuestionnaire: values,
-    };
-
-    console.log('Combined form data:', combinedFormValues);
+      programQuestionnaire: programQuestionnaireValues,
+    });
 
     // Proceed with form submission including questionnaire answers
     formik.handleSubmit();
