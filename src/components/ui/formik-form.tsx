@@ -86,24 +86,8 @@ export const formikValidationSchema = Yup.object().shape({
 
     return Yup.object().shape(shape);
   }),
-  programQuestionnaire: Yup.lazy((obj) => {
-    // We're moving the detailed validation to the ProgramQuestionnaire component
-    // Just do minimal validation here
-    if (!obj || Object.keys(obj).length === 0) return Yup.object();
-
-    // Only validate that fields are present, not their specific format
-    // since that will be handled in the ProgramQuestionnaire component
-    const shape = Object.keys(obj).reduce<Record<string, Yup.AnySchema>>(
-      (acc, key) => {
-        // Mark fields as required if they exist in the object
-        acc[key] = Yup.string().required('This question is required');
-        return acc;
-      },
-      {}
-    );
-
-    return Yup.object().shape(shape);
-  }),
+  // programQuestionnaire validation is removed as it will be handled separately
+  // in the ProgramQuestionnaire component after the "Confirm & Pay" button is clicked
 });
 
 export type FormFieldProps<T = string> = FieldProps<FormikFormValues> & {
