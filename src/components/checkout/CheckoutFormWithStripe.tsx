@@ -305,10 +305,8 @@ export const CheckoutFormWithStripe = ({
               state: values.state,
               zip: values.zip,
             },
-            addOnProducts: values.expenseType
-              ? {
-                  AddOnProductIds: [values.expenseType],
-                }
+            addOnProductIds: values.expenseType
+              ? [values.expenseType]
               : undefined,
             programQuestionnaire: (() => {
               console.log(

@@ -243,9 +243,7 @@ export interface CheckoutPayload {
       state: string;
       zip: string;
     };
-    addOnProducts?: {
-      AddOnProductIds: string[];
-    };
+    addOnProductIds?: string[];
     complianceQuestionnaire?: Record<string, string>;
     programQuestionnaire?: Record<string, string>;
     utm?: {
