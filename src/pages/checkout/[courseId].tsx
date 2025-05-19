@@ -1,23 +1,23 @@
-import { useEffect, useState } from 'react';
-import ErrorPage from 'next/error';
-import { FullScreenLoader } from '@/components/ui/loader';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe, Stripe } from '@stripe/stripe-js';
-import { fetchCourse, type CourseData } from '@/lib/api';
-import { Toaster } from '@/components/ui/toaster';
-import { CheckoutFormWithStripe } from '@/components/checkout/CheckoutFormWithStripe';
-import type { GetServerSideProps } from 'next';
-import { GoogleReCaptchaProvider } from '@google-recaptcha/react';
+import { useEffect, useState } from "react";
+import ErrorPage from "next/error";
+import { FullScreenLoader } from "@/components/ui/loader";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe, Stripe } from "@stripe/stripe-js";
+import { fetchCourse, type CourseData } from "@/lib/api";
+import { Toaster } from "@/components/ui/toaster";
+import { CheckoutFormWithStripe } from "@/components/checkout/CheckoutFormWithStripe";
+import type { GetServerSideProps } from "next";
+import { GoogleReCaptchaProvider } from "@google-recaptcha/react";
 
 // Log that Stripe will be initialized with the key from API
-console.log('Stripe will be initialized with key from API');
+console.log("Stripe will be initialized with key from API");
 
 // reCAPTCHA site key - replace with your actual site key
 const RECAPTCHA_SITE_KEY =
   process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ||
-  (process.env.NODE_ENV === 'development'
-    ? '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' // Google's test key
-    : ''); // Empty string fallback (though this should never happen in production)
+  (process.env.NODE_ENV === "development"
+    ? "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // Google's test key
+    : ""); // Empty string fallback (though this should never happen in production)
 
 const CheckoutPage = ({
   course: initialCourse,
@@ -48,21 +48,21 @@ const CheckoutPage = ({
   // Initialize Stripe when course data is available
   useEffect(() => {
     if (course) {
-      console.log('[CheckoutPage] Course payment data:', course.payment);
+      console.log("[CheckoutPage] Course payment data:", course.payment);
 
       // Ensure publishable key exists and initialize Stripe
       if (course.payment?.publishableKey) {
         console.log(
-          '[CheckoutPage] Found publishable key:',
+          "[CheckoutPage] Found publishable key:",
           course.payment.publishableKey
         );
         setStripePromise(loadStripe(course.payment.publishableKey));
       } else {
-        console.error('[CheckoutPage] No publishable key found in course data');
+        console.error("[CheckoutPage] No publishable key found in course data");
         // Fallback to a default key if needed
         const fallbackKey =
-          'pk_test_51LnTljH6DOp7WA3cYAlemahUkCBTv94b8Cv0laMT4lnEtYShNGSScumTN0oLymu54H2b6TKzPstIaihee4pRrswn00yKstyPbS';
-        console.log('[CheckoutPage] Using fallback key');
+          "pk_test_51LnTljH6DOp7WA3cYAlemahUkCBTv94b8Cv0laMT4lnEtYShNGSScumTN0oLymu54H2b6TKzPstIaihee4pRrswn00yKstyPbS";
+        console.log("[CheckoutPage] Using fallback key");
         setStripePromise(loadStripe(fallbackKey));
       }
     }
@@ -107,32 +107,32 @@ const CheckoutPage = ({
   console.log("[CheckoutPage] Rendering checkout form with Stripe");
   return (
     <GoogleReCaptchaProvider siteKey={RECAPTCHA_SITE_KEY} type="v3">
-      <div className="min-h-screen bg-gray-50">
+      <div>
         <Elements
           stripe={stripePromise}
           options={{
             fonts: [
               {
                 cssSrc:
-                  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
+                  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap",
               },
             ],
             appearance: {
-              theme: 'stripe',
+              theme: "stripe",
               variables: {
-                colorPrimary: '#FF9361',
-                colorBackground: '#ffffff',
-                colorText: '#424770',
-                colorDanger: '#9e2146',
-                fontFamily: 'Inter, system-ui, sans-serif',
-                spacingUnit: '4px',
-                borderRadius: '4px',
+                colorPrimary: "#FF9361",
+                colorBackground: "#ffffff",
+                colorText: "#424770",
+                colorDanger: "#9e2146",
+                fontFamily: "Inter, system-ui, sans-serif",
+                spacingUnit: "4px",
+                borderRadius: "4px",
               },
             },
-            loader: 'auto',
+            loader: "auto",
           }}
         >
-          <div className="container mx-auto px-4 py-8">
+          <div className="">
             <div className="flex flex-col items-center mb-8">
               <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-900 font-inter">
                 {course.title}

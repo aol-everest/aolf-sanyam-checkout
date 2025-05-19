@@ -200,7 +200,7 @@ export const MainContent = ({
 
   return (
     <>
-      <div>
+      <main className="checkout-aol">
         <div className="container">
           <div className="row">
             <div className="col-12 col-lg-7">
@@ -385,7 +385,7 @@ export const MainContent = ({
                                   form.setFieldValue("phone", value || "");
                                   form.setFieldTouched("phone", true, false);
                                 }}
-                                className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                                className={`input-div ${
                                   form.touched[field.name] &&
                                   form.errors[field.name]
                                     ? "border-red-500"
@@ -811,7 +811,7 @@ export const MainContent = ({
 
                           return (
                             <FormItem>
-                              <div className="flex items-start gap-2">
+                              <div className="form-item checkbox">
                                 <Checkbox
                                   id={`compliance-${question.sfid}`}
                                   checked={field.value}
@@ -868,40 +868,29 @@ export const MainContent = ({
                           "Confirm and Pay"
                         )}
                       </Button>
+                      <Button
+                        type="button"
+                        className="submit-btn"
+                        disabled={loading}
+                        onClick={handleConfirmAndPay}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          "Confirm and Pay"
+                        )}
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="text-sm">
-                    For any health related questions, please contact us at{" "}
-                    <a
-                      href="mailto:health.info@us.artofliving.org"
-                      className="text-[#FF9361]"
-                    >
-                      health.info@us.artofliving.org
-                    </a>
-                  </div>
-
-                  <Button
-                    type="button"
-                    className="w-full bg-[#FF9361] hover:bg-[#ff7a3d] mt-4"
-                    disabled={loading}
-                    onClick={handleConfirmAndPay}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Confirm and Pay"
-                    )}
-                  </Button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </>
   );
 };
