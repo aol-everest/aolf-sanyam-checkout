@@ -14,15 +14,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { US_STATES } from '@/components/checkout/constants';
-import type { CourseData } from '@/lib/api';
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { US_STATES } from "@/components/checkout/constants";
+import type { CourseData } from "@/lib/api";
 // import Image from 'next/image';
-import { Loader2 } from 'lucide-react';
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2 } from "lucide-react";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { Checkbox } from "@/components/ui/checkbox";
 // Import the StripeCardWrapper for when we need to reference it
 import { StripeCardWrapper } from '@/components/checkout/StripeCardWrapper';
 import { ProgramQuestionnaire } from '@/components/checkout/ProgramQuestionnaire';
@@ -66,7 +66,7 @@ interface MainContentProps {
   loading: boolean;
   course: CourseData & {
     groupedAddOnProducts: {
-      'Residential Add On': ResidentialAddOnProduct[];
+      "Residential Add On": ResidentialAddOnProduct[];
     };
   };
   setQuestionnaireAnswers: React.Dispatch<
@@ -76,9 +76,9 @@ interface MainContentProps {
 
 // Helper function to format time
 const formatTime = (time: string) => {
-  const [hours, minutes] = time.split(':');
+  const [hours, minutes] = time.split(":");
   const hour = parseInt(hours);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const ampm = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 || 12;
   return `${hour12}:${minutes}${ampm}`;
 };
@@ -88,8 +88,8 @@ const formatDateRange = (startDate: string, endDate: string) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  const startMonth = start.toLocaleString('en-US', { month: 'long' });
-  const endMonth = end.toLocaleString('en-US', { month: 'long' });
+  const startMonth = start.toLocaleString("en-US", { month: "long" });
+  const endMonth = end.toLocaleString("en-US", { month: "long" });
   const startDay = start.getDate();
   const endDay = end.getDate();
   const year = start.getFullYear();
@@ -115,7 +115,7 @@ export const MainContent = ({
 }: MainContentProps) => {
   const coursePrice = course.payment?.pricing?.price?.unitPrice || 0;
   const selectedExpenseType = course.groupedAddOnProducts[
-    'Residential Add On'
+    "Residential Add On"
   ].find((product) => product.sfid === formik.values.expenseType);
   const totalPrice = coursePrice + (selectedExpenseType?.unitPrice || 0);
 
@@ -205,20 +205,19 @@ export const MainContent = ({
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl shadow-sm">
-                <div className="p-8">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      Account Details
-                    </h2>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <div className="container">
+          <div className="row">
+            <div className="col-12 col-lg-7">
+              <div className="section--title">
+                <h1 className="page-title">Sanyam- 2</h1>
+                <div className="description"></div>
+              </div>
+              <div className="section-box account-details">
+                <h2 className="section__title">Account Details</h2>
+                <div className="section__body">
+                  <div className="form-inputs checkout-fields">
+                    <div className="form-item">
                       <FormField name="firstName">
                         {({ field, form }: FormFieldProps<string>) => (
                           <FormItem>
@@ -229,14 +228,16 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="firstName" />
                           </FormItem>
                         )}
                       </FormField>
+                    </div>
+                    <div className="form-item">
                       <FormField name="lastName">
                         {({ field, form }: FormFieldProps<string>) => (
                           <FormItem>
@@ -247,8 +248,8 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="lastName" />
@@ -256,46 +257,47 @@ export const MainContent = ({
                         )}
                       </FormField>
                     </div>
-
-                    <FormField name="address">
-                      {({ field, form }: FormFieldProps<string>) => (
-                        <FormItem>
-                          <Label>Street Address</Label>
-                          <Input
-                            {...field}
-                            placeholder="Street Address"
-                            className={`${
-                              form.touched[field.name] &&
-                              form.errors[field.name]
-                                ? 'border-red-500'
-                                : ''
-                            }`}
-                          />
-                          <FormMessage name="address" />
-                        </FormItem>
-                      )}
-                    </FormField>
-
-                    <FormField name="city">
-                      {({ field, form }: FormFieldProps<string>) => (
-                        <FormItem>
-                          <Label>City</Label>
-                          <Input
-                            {...field}
-                            placeholder="City"
-                            className={`${
-                              form.touched[field.name] &&
-                              form.errors[field.name]
-                                ? 'border-red-500'
-                                : ''
-                            }`}
-                          />
-                          <FormMessage name="city" />
-                        </FormItem>
-                      )}
-                    </FormField>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-item">
+                      <FormField name="address">
+                        {({ field, form }: FormFieldProps<string>) => (
+                          <FormItem>
+                            <Label>Street Address</Label>
+                            <Input
+                              {...field}
+                              placeholder="Street Address"
+                              className={`${
+                                form.touched[field.name] &&
+                                form.errors[field.name]
+                                  ? "border-red-500"
+                                  : ""
+                              }`}
+                            />
+                            <FormMessage name="address" />
+                          </FormItem>
+                        )}
+                      </FormField>
+                    </div>
+                    <div className="form-item">
+                      <FormField name="city">
+                        {({ field, form }: FormFieldProps<string>) => (
+                          <FormItem>
+                            <Label>City</Label>
+                            <Input
+                              {...field}
+                              placeholder="City"
+                              className={`${
+                                form.touched[field.name] &&
+                                form.errors[field.name]
+                                  ? "border-red-500"
+                                  : ""
+                              }`}
+                            />
+                            <FormMessage name="city" />
+                          </FormItem>
+                        )}
+                      </FormField>
+                    </div>
+                    <div className="form-item">
                       <FormField name="state">
                         {({ field, form }: FormFieldProps<string>) => (
                           <FormItem>
@@ -303,15 +305,15 @@ export const MainContent = ({
                             <Select
                               value={field.value}
                               onValueChange={(value) =>
-                                form.setFieldValue('state', value)
+                                form.setFieldValue("state", value)
                               }
                             >
                               <SelectTrigger
                                 className={`${
                                   form.touched[field.name] &&
                                   form.errors[field.name]
-                                    ? 'border-red-500'
-                                    : ''
+                                    ? "border-red-500"
+                                    : ""
                                 }`}
                               >
                                 <SelectValue placeholder="State" />
@@ -331,6 +333,8 @@ export const MainContent = ({
                           </FormItem>
                         )}
                       </FormField>
+                    </div>
+                    <div className="form-item">
                       <FormField name="zip">
                         {({ field, form }: FormFieldProps<string>) => (
                           <FormItem>
@@ -341,8 +345,8 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="zip" />
@@ -351,7 +355,7 @@ export const MainContent = ({
                       </FormField>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-item">
                       <FormField name="email">
                         {({ field, form }: FormFieldProps<string>) => (
                           <FormItem>
@@ -363,14 +367,16 @@ export const MainContent = ({
                               className={`${
                                 form.touched[field.name] &&
                                 form.errors[field.name]
-                                  ? 'border-red-500'
-                                  : ''
+                                  ? "border-red-500"
+                                  : ""
                               }`}
                             />
                             <FormMessage name="email" />
                           </FormItem>
                         )}
                       </FormField>
+                    </div>
+                    <div className="form-item">
                       <FormField name="phone">
                         {({ field, form }: FormFieldProps<string>) => (
                           <FormItem>
@@ -381,14 +387,14 @@ export const MainContent = ({
                                 defaultCountry="US"
                                 value={field.value}
                                 onChange={(value) => {
-                                  form.setFieldValue('phone', value || '');
-                                  form.setFieldTouched('phone', true, false);
+                                  form.setFieldValue("phone", value || "");
+                                  form.setFieldTouched("phone", true, false);
                                 }}
                                 className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                                   form.touched[field.name] &&
                                   form.errors[field.name]
-                                    ? 'border-red-500'
-                                    : ''
+                                    ? "border-red-500"
+                                    : ""
                                 }`}
                               />
                             </div>
@@ -437,8 +443,8 @@ export const MainContent = ({
                       <path d="M12 8H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h8" />
                       <polyline points="16 7 21 12 16 17" />
                     </svg>
-                    <span className="text-lg font-medium">Notes:</span>
-                  </div>
+                    Notes:
+                  </h2>
 
                   <div className="space-y-6 text-sm">
                     <div
@@ -451,36 +457,46 @@ export const MainContent = ({
               )}
             </div>
 
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-sm p-8">
-                <div className="bg-[#FF9361] text-white p-4 rounded-lg mb-6">
-                  <div className="flex justify-between items-center">
-                    <span>Regular Tuition:</span>
-                    <span>${coursePrice}</span>
-                  </div>
-                  {selectedExpenseType && (
-                    <div className="flex justify-between items-center mt-2">
-                      <span>{selectedExpenseType.name}:</span>
-                      <span>${selectedExpenseType.unitPrice}</span>
+            <div className="col-12 col-lg-5">
+              <div className="checkout-sidebar">
+                <div className="offer-box">
+                  <div className="offer-type">
+                    <div className="form-item radio">
+                      <label>
+                        <span className="radio-text">Regular Tuition:</span>
+                        <span className="radio-value">${coursePrice}</span>
+                      </label>
                     </div>
-                  )}
-                  <div className="border-t border-white/20 mt-2 pt-2">
-                    <div className="flex justify-between items-center font-semibold">
-                      <span>Total:</span>
-                      <span>${totalPrice}</span>
+                    {selectedExpenseType && (
+                      <div className="form-item radio">
+                        <label>
+                          <span className="radio-text">
+                            {selectedExpenseType.name}:
+                          </span>
+                          <span className="radio-value">
+                            ${selectedExpenseType.unitPrice}
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                    <div className="form-item radio">
+                      <label>
+                        <span className="radio-text">Total:</span>
+                        <span className="radio-value">${totalPrice}</span>
+                      </label>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="">
                   <FormField name="expenseType">
                     {({ field, form }: FormFieldProps<string>) => (
-                      <FormItem>
+                      <FormItem className="room-board-pricing">
                         <Label>Expense Type</Label>
                         <Select
                           value={field.value}
                           onValueChange={(value) =>
-                            form.setFieldValue('expenseType', value)
+                            form.setFieldValue("expenseType", value)
                           }
                         >
                           <SelectTrigger>
@@ -488,7 +504,7 @@ export const MainContent = ({
                           </SelectTrigger>
                           <SelectContent>
                             {course.groupedAddOnProducts[
-                              'Residential Add On'
+                              "Residential Add On"
                             ].map((option) => (
                               <SelectItem
                                 key={option.sfid}
@@ -496,7 +512,7 @@ export const MainContent = ({
                                 disabled={option.isFull}
                               >
                                 {option.name} - ${option.unitPrice}
-                                {option.isFull ? ' (FULL)' : ''}
+                                {option.isFull ? " (FULL)" : ""}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -509,26 +525,148 @@ export const MainContent = ({
                     )}
                   </FormField>
 
-                  <div className="border-t pt-4">
-                    <h3 className="font-medium mb-4">Details:</h3>
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <span className="text-gray-500">Date:</span>
-                        <span>
+                  <div className="section-box checkout-details">
+                    <h2 className="section__title">Details:</h2>
+                    <div className="section__body">
+                      <div className="detail-item row">
+                        <div className="label col-5">
+                          <svg
+                            className="detailsIcon icon-calendar"
+                            viewBox="0 0 34 32"
+                          >
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="2.4"
+                              d="M29.556 16c0 7.36-5.973 13.333-13.333 13.333s-13.333-5.973-13.333-13.333c0-7.36 5.973-13.333 13.333-13.333s13.333 5.973 13.333 13.333z"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="2.4"
+                              d="M21.168 20.24l-4.133-2.467c-0.72-0.427-1.307-1.453-1.307-2.293v-5.467"
+                            ></path>
+                          </svg>
+                          Date:
+                        </div>
+                        <span className="value col-7">
                           {formatDateRange(
                             course.schedule.startDate,
                             course.schedule.endDate
                           )}
                         </span>
                       </div>
-                      <div className="flex gap-2 items-start">
-                        <span className="text-gray-500">Timing:</span>
-                        <div className="space-y-1">
+                      <div className="detail-item row">
+                        <div className="label col-5">
+                          <svg
+                            className="detailsIcon icon-calendar"
+                            viewBox="0 0 34 32"
+                          >
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="10"
+                              stroke-width="2.4"
+                              d="M10.889 2.667v4"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="10"
+                              stroke-width="2.4"
+                              d="M21.555 2.667v4"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="10"
+                              stroke-width="2.4"
+                              d="M4.889 12.12h22.667"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="10"
+                              stroke-width="2.4"
+                              d="M28.222 11.333v11.333c0 4-2 6.667-6.667 6.667h-10.667c-4.667 0-6.667-2.667-6.667-6.667v-11.333c0-4 2-6.667 6.667-6.667h10.667c4.667 0 6.667 2.667 6.667 6.667z"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="3.2"
+                              d="M21.148 18.267h0.012"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="3.2"
+                              d="M21.148 22.267h0.012"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="3.2"
+                              d="M16.216 18.267h0.012"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="3.2"
+                              d="M16.216 22.267h0.012"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="3.2"
+                              d="M11.281 18.267h0.012"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="3.2"
+                              d="M11.281 22.267h0.012"
+                            ></path>
+                          </svg>
+                          Timing:
+                        </div>
+                        <div className="value col-7">
                           {course.timings.map((timing) => (
                             <div key={timing.id}>
                               {new Date(timing.startDate).toLocaleDateString(
-                                'en-US',
-                                { weekday: 'short' }
+                                "en-US",
+                                { weekday: "short" }
                               )}
                               : {formatTime(timing.startTime)}-
                               {formatTime(timing.endTime)} {timing.timeZone}
@@ -536,24 +674,94 @@ export const MainContent = ({
                           ))}
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <span className="text-gray-500">Instructor(s):</span>
-                        <span>{course.teachers.primary.name}</span>
+                      <div className="detail-item row">
+                        <div className="label col-5">
+                          <svg
+                            className="detailsIcon icon-calendar"
+                            viewBox="0 0 34 32"
+                          >
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="2.4"
+                              d="M16.435 14.493c-0.133-0.013-0.293-0.013-0.44 0-3.173-0.107-5.693-2.707-5.693-5.907 0-3.267 2.64-5.92 5.92-5.92 3.267 0 5.92 2.653 5.92 5.92-0.013 3.2-2.533 5.8-5.707 5.907z"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="round"
+                              stroke-linecap="round"
+                              stroke-miterlimit="4"
+                              stroke-width="2.4"
+                              d="M9.768 19.413c-3.227 2.16-3.227 5.68 0 7.827 3.667 2.453 9.68 2.453 13.347 0 3.227-2.16 3.227-5.68 0-7.827-3.653-2.44-9.667-2.44-13.347 0z"
+                            ></path>
+                          </svg>
+                          Instructor(s):
+                        </div>
+                        <div className="value col-7">
+                          {course.teachers.primary.name}
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <span className="text-gray-500">Location:</span>
-                        <a
-                          href={course.location.center?.centerUrl}
-                          className="text-[#FF9361]"
-                        >
-                          {course.location.street}, {course.location.city},{' '}
-                          {course.location.province}{' '}
-                          {course.location.postalCode}
-                        </a>
+                      <div className="detail-item row">
+                        <div className="label col-5">
+                          <svg
+                            className="detailsIcon icon-calendar"
+                            viewBox="0 0 34 32"
+                          >
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="miter"
+                              stroke-linecap="butt"
+                              stroke-miterlimit="4"
+                              stroke-width="2.4"
+                              d="M16.223 17.907c2.297 0 4.16-1.863 4.16-4.16s-1.863-4.16-4.16-4.16c-2.298 0-4.16 1.863-4.16 4.16s1.863 4.16 4.16 4.16z"
+                            ></path>
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="miter"
+                              stroke-linecap="butt"
+                              stroke-miterlimit="4"
+                              stroke-width="2.4"
+                              d="M5.049 11.32c2.627-11.547 19.733-11.533 22.347 0.013 1.533 6.773-2.68 12.507-6.373 16.053-2.68 2.587-6.92 2.587-9.613 0-3.68-3.547-7.893-9.293-6.36-16.067z"
+                            ></path>
+                          </svg>
+                          Location:
+                        </div>
+                        <div className="value col-7">
+                          <a
+                            href={course.location.center?.centerUrl}
+                            className="text-[#FF9361]"
+                          >
+                            {course.location.street}, {course.location.city},{" "}
+                            {course.location.province}{" "}
+                            {course.location.postalCode}
+                          </a>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <span className="text-gray-500">Contact Details:</span>
-                        <div>
+                      <div className="detail-item row">
+                        <div className="label col-5">
+                          <svg
+                            className="detailsIcon icon-calendar"
+                            viewBox="0 0 34 32"
+                          >
+                            <path
+                              fill="none"
+                              stroke="#9598a6"
+                              stroke-linejoin="miter"
+                              stroke-linecap="butt"
+                              stroke-miterlimit="10"
+                              stroke-width="2.4"
+                              d="M29.516 24.44c0 0.48-0.107 0.973-0.333 1.453s-0.52 0.933-0.907 1.36c-0.653 0.72-1.373 1.24-2.187 1.573-0.8 0.333-1.667 0.507-2.6 0.507-1.36 0-2.813-0.32-4.347-0.973s-3.067-1.533-4.587-2.64c-1.533-1.12-2.987-2.36-4.373-3.733-1.373-1.387-2.613-2.84-3.72-4.36-1.093-1.52-1.973-3.040-2.613-4.547-0.64-1.52-0.96-2.973-0.96-4.36 0-0.907 0.16-1.773 0.48-2.573 0.32-0.813 0.827-1.56 1.533-2.227 0.853-0.84 1.787-1.253 2.773-1.253 0.373 0 0.747 0.080 1.080 0.24 0.347 0.16 0.653 0.4 0.893 0.747l3.093 4.36c0.24 0.333 0.413 0.64 0.533 0.933 0.12 0.28 0.187 0.56 0.187 0.813 0 0.32-0.093 0.64-0.28 0.947-0.173 0.307-0.427 0.627-0.747 0.947l-1.013 1.053c-0.147 0.147-0.213 0.32-0.213 0.533 0 0.107 0.013 0.2 0.040 0.307 0.040 0.107 0.080 0.187 0.107 0.267 0.24 0.44 0.653 1.013 1.24 1.707 0.6 0.693 1.24 1.4 1.933 2.107 0.72 0.707 1.413 1.36 2.12 1.96 0.693 0.587 1.267 0.987 1.72 1.227 0.067 0.027 0.147 0.067 0.24 0.107 0.107 0.040 0.213 0.053 0.333 0.053 0.227 0 0.4-0.080 0.547-0.227l1.013-1c0.333-0.333 0.653-0.587 0.96-0.747 0.307-0.187 0.613-0.28 0.947-0.28 0.253 0 0.52 0.053 0.813 0.173s0.6 0.293 0.933 0.52l4.413 3.133c0.347 0.24 0.587 0.52 0.733 0.853 0.133 0.333 0.213 0.667 0.213 1.040z"
+                            ></path>
+                          </svg>
+                          Contact Details:
+                        </div>
+                        <div className="value col-7">
                           <div>{course.contact.name}</div>
                           <a
                             href={`mailto:${course.contact.email}`}
@@ -567,17 +775,17 @@ export const MainContent = ({
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="section-box confirm-submit">
                     <FormField name="agreeTerms">
                       {({ field, form }: FormFieldProps<boolean>) => (
                         <FormItem>
-                          <div className="flex items-start gap-2">
+                          <div className="form-item checkbox">
                             <Checkbox
                               id="agreeTerms"
                               checked={field.value}
                               onCheckedChange={(checked) => {
                                 form.setFieldValue(
-                                  'agreeTerms',
+                                  "agreeTerms",
                                   Boolean(checked)
                                 );
                               }}
@@ -586,7 +794,7 @@ export const MainContent = ({
                               htmlFor="agreeTerms"
                               className="cursor-pointer"
                             >
-                              I agree to the{' '}
+                              I agree to the{" "}
                               <a href="#" className="text-[#FF9361]">
                                 Program Participant agreement
                               </a>
@@ -640,6 +848,32 @@ export const MainContent = ({
                         }}
                       </FormField>
                     ))}
+                    <div className="note">
+                      For any health related questions, please contact us at{" "}
+                      <a
+                        href="mailto:health.info@us.artofliving.org"
+                        className="text-[#FF9361]"
+                      >
+                        health.info@us.artofliving.org
+                      </a>
+                    </div>
+                    <div className="form-item submit-item">
+                      <Button
+                        type="button"
+                        className="submit-btn"
+                        disabled={loading}
+                        onClick={() => formik.handleSubmit()}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          "Confirm and Pay"
+                        )}
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="text-sm">

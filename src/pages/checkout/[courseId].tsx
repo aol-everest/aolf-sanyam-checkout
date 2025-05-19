@@ -26,7 +26,7 @@ const CheckoutPage = ({
   course?: CourseData;
   courseId: string;
 }): JSX.Element => {
-  console.log('[CheckoutPage] Props:', { initialCourse, courseId });
+  console.log("[CheckoutPage] Props:", { initialCourse, courseId });
 
   const [course, setCourse] = useState<CourseData | null>(
     initialCourse || null
@@ -70,18 +70,18 @@ const CheckoutPage = ({
 
   useEffect(() => {
     if (initialCourse) {
-      console.log('[CheckoutPage] Using initial course data');
+      console.log("[CheckoutPage] Using initial course data");
       return;
     }
 
     const loadCourse = async () => {
       try {
-        console.log('[CheckoutPage] Fetching course data for:', courseId);
+        console.log("[CheckoutPage] Fetching course data for:", courseId);
         const data = await fetchCourse(courseId);
-        console.log('[CheckoutPage] Fetched course data:', data);
+        console.log("[CheckoutPage] Fetched course data:", data);
         setCourse(data);
       } catch (error) {
-        console.error('[CheckoutPage] Failed to load course:', error);
+        console.error("[CheckoutPage] Failed to load course:", error);
       } finally {
         setLoading(false);
       }
@@ -91,12 +91,12 @@ const CheckoutPage = ({
   }, [courseId, initialCourse]);
 
   if (loading) {
-    console.log('[CheckoutPage] Loading course details...');
+    console.log("[CheckoutPage] Loading course details...");
     return <FullScreenLoader message="Loading course details..." />;
   }
 
   if (!course) {
-    console.log('[CheckoutPage] Course not found');
+    console.log("[CheckoutPage] Course not found");
     return <ErrorPage statusCode={404} title="Course Not Found" />;
   }
 
@@ -104,7 +104,7 @@ const CheckoutPage = ({
     return <FullScreenLoader message="Initializing payment system..." />;
   }
 
-  console.log('[CheckoutPage] Rendering checkout form with Stripe');
+  console.log("[CheckoutPage] Rendering checkout form with Stripe");
   return (
     <GoogleReCaptchaProvider siteKey={RECAPTCHA_SITE_KEY} type="v3">
       <div className="min-h-screen bg-gray-50">
@@ -158,11 +158,11 @@ const CheckoutPage = ({
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { courseId } = context.params as { courseId: string };
-  console.log('[getServerSideProps] Fetching course:', courseId);
+  console.log("[getServerSideProps] Fetching course:", courseId);
 
   try {
     const course = await fetchCourse(courseId);
-    console.log('[getServerSideProps] Fetched course:', course);
+    console.log("[getServerSideProps] Fetched course:", course);
     return {
       props: {
         course,
@@ -170,7 +170,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   } catch (error) {
-    console.error('[getServerSideProps] Failed to fetch course:', error);
+    console.error("[getServerSideProps] Failed to fetch course:", error);
     return {
       props: {
         courseId,
