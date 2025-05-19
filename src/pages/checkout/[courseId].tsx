@@ -92,7 +92,7 @@ const CheckoutPage = ({
 
   if (loading) {
     console.log('[CheckoutPage] Loading course details...');
-    return <FullScreenLoader message="Loading course details..." />;
+    return <FullScreenLoader />;
   }
 
   if (!course) {
@@ -101,7 +101,7 @@ const CheckoutPage = ({
   }
 
   if (!isMounted || !stripePromise) {
-    return <FullScreenLoader message="Initializing payment system..." />;
+    return <FullScreenLoader />;
   }
 
   console.log('[CheckoutPage] Rendering checkout form with Stripe');
