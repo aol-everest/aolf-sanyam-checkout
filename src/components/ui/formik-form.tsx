@@ -144,11 +144,36 @@ export const FormItem: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 export const FormMessage: React.FC<{
   name: string;
   className?: string;
-}> = ({ name, className }) => {
+  innerKey?: string;
+}> = ({ name, className, innerKey }) => {
   return (
     <Field name={name}>
       {({ form }: FormFieldProps) => {
-        const error = form.touched[name] && form.errors[name];
+        let error = null;
+        if (!innerKey) {
+          error = form.touched[name] && form.errors[name];
+        } else {
+          // Add type checking for nested objects
+          const touchedField = form.touched[name];
+          const errorField = form.errors[name];
+
+          if (
+            touchedField &&
+            typeof touchedField === 'object' &&
+            errorField &&
+            typeof errorField === 'object'
+          ) {
+            // Use type assertions to satisfy TypeScript
+            error =
+              (touchedField as Record<string, boolean>)[innerKey] &&
+              (errorField as Record<string, string>)[innerKey];
+          }
+        }
+        console.log(`FormMessage component for ${name}:`, {
+          touched: form.touched[name],
+          error: form.errors[name],
+          isVisible: !!error,
+        });
         if (!error) return null;
         return (
           <div className={`text-sm text-red-500 mt-1 ${className || ''}`}>

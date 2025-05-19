@@ -90,27 +90,21 @@ export const CheckoutFormWithStripe = ({
       error: cardState.error,
     });
 
+    // Collect all errors in an array
+    const errors: string[] = [];
+
     // Check if card element is properly initialized
     if (!cardState.element) {
       console.error('Card element is not initialized after validation');
-      toast({
-        variant: 'destructive',
-        title: 'Payment Error',
-        description:
-          'Card element not initialized. Please refresh and try again.',
-      });
-      return;
+      errors.push(
+        'Card element not initialized. Please refresh and try again.'
+      );
     }
 
     // Check for empty card
     if (cardState.empty) {
       console.log('Card is empty after validation, cannot process payment');
-      toast({
-        variant: 'destructive',
-        title: 'Payment Error',
-        description: 'Please enter your card information.',
-      });
-      return;
+      errors.push('Please enter your card information.');
     }
 
     // Check for incomplete card
@@ -118,21 +112,27 @@ export const CheckoutFormWithStripe = ({
       console.log(
         'Card is incomplete after validation, cannot process payment'
       );
-      toast({
-        variant: 'destructive',
-        title: 'Payment Error',
-        description: 'Please complete your card information.',
-      });
-      return;
+      errors.push('Please complete your card information.');
     }
 
     // Check for card errors
     if (cardState.error) {
       console.log('Card has errors after validation:', cardState.error);
+      errors.push(`Card error: ${cardState.error}`);
+    }
+
+    // Display all errors in a single toast if any
+    if (errors.length > 0) {
       toast({
         variant: 'destructive',
         title: 'Payment Error',
-        description: cardState.error,
+        description: (
+          <ul className="list-disc pl-5 mt-2">
+            {errors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        ),
       });
       return;
     }
@@ -146,7 +146,7 @@ export const CheckoutFormWithStripe = ({
 
       try {
         // Create token using the stripe instance and card element from context
-        const tokenResult = await stripe.createToken(cardState.element);
+        const tokenResult = await stripe.createToken(cardState.element!);
 
         if (tokenResult.error) {
           console.error('Error creating token:', tokenResult.error);
@@ -279,24 +279,135 @@ export const CheckoutFormWithStripe = ({
       });
 
       if (formikRef.current) {
-        // Manually trigger full validation
-        formikRef.current.validateForm().then((errors) => {
-          // Touch all fields to show errors
-          const fieldNames = Object.keys(formikRef.current?.values || {});
-          fieldNames.forEach((field) => {
-            formikRef.current?.setFieldTouched(field, true, false);
-          });
+        // Set all fields as touched immediately to show validation errors
+        const values = formikRef.current.values;
 
-          // Touch program questionnaire fields specifically
-          Object.keys(
-            formikRef.current?.values.programQuestionnaire || {}
-          ).forEach((key) => {
+        // Touch all top-level fields
+        Object.keys(values).forEach((field) => {
+          formikRef.current?.setFieldTouched(field, true, false);
+        });
+
+        // Touch all compliance answer fields specifically
+        if (values.complianceAnswers) {
+          console.log(
+            'Setting all compliance fields as touched:',
+            Object.keys(values.complianceAnswers)
+          );
+          Object.keys(values.complianceAnswers).forEach((key) => {
+            const fieldPath = `complianceAnswers.${key}`;
+            formikRef.current?.setFieldTouched(fieldPath, true, false);
+            console.log(`Set ${fieldPath} as touched`);
+          });
+        }
+
+        // Touch all program questionnaire fields
+        if (values.programQuestionnaire) {
+          Object.keys(values.programQuestionnaire).forEach((key) => {
             formikRef.current?.setFieldTouched(
               `programQuestionnaire.${key}`,
               true,
               false
             );
           });
+        }
+
+        // Now validate the form
+        formikRef.current.validateForm().then((errors) => {
+          console.log('Formik errors:', errors);
+
+          // Collect all error messages
+          const errorMessages: string[] = [];
+
+          // Process top-level errors
+          Object.entries(errors).forEach(([field, message]) => {
+            if (typeof message === 'string') {
+              errorMessages.push(`${field}: ${message}`);
+            }
+          });
+
+          // Process nested errors in programQuestionnaire if any
+          if (
+            errors.programQuestionnaire &&
+            typeof errors.programQuestionnaire === 'object'
+          ) {
+            Object.entries(errors.programQuestionnaire).forEach(
+              ([field, message]) => {
+                if (typeof message === 'string') {
+                  errorMessages.push(`Question ${field}: ${message}`);
+                }
+              }
+            );
+          }
+
+          // Process nested errors in complianceAnswers if any
+          if (
+            errors.complianceAnswers &&
+            typeof errors.complianceAnswers === 'object'
+          ) {
+            console.log(
+              'Processing compliance errors:',
+              errors.complianceAnswers
+            );
+            Object.entries(errors.complianceAnswers).forEach(
+              ([field, message]) => {
+                if (typeof message === 'string') {
+                  // Get compliance question data from course if available
+                  const questionData = course.complianceQuestionnaire?.find(
+                    (q) => q.sfid === field
+                  );
+                  const questionLabel = questionData
+                    ? `Compliance: ${questionData.question
+                        .replace(/<[^>]*>?/gm, '')
+                        .substring(0, 50)}...`
+                    : `Compliance ${field}`;
+
+                  const errorMessage = `${questionLabel}: ${message}`;
+                  console.log(`Adding compliance error: ${errorMessage}`);
+                  errorMessages.push(errorMessage);
+                }
+              }
+            );
+          }
+
+          // Check for card errors separately
+          if (updatedCardState.empty) {
+            toast({
+              variant: 'destructive',
+              title: 'Payment Error',
+              description: 'Please enter your card information.',
+            });
+            return;
+          } else if (!updatedCardState.complete) {
+            toast({
+              variant: 'destructive',
+              title: 'Payment Error',
+              description: 'Please complete your card information.',
+            });
+            return;
+          } else if (updatedCardState.error) {
+            toast({
+              variant: 'destructive',
+              title: 'Payment Error',
+              description: updatedCardState.error,
+            });
+            return;
+          }
+
+          // Show a single toast with all error messages
+          if (errorMessages.length > 0) {
+            toast({
+              variant: 'destructive',
+              title: 'Please fix the following errors:',
+              description: (
+                <ul className="list-disc pl-5 mt-2">
+                  {errorMessages.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              ),
+            });
+            return;
+          }
 
           // Submit after touching all fields
           formikRef.current?.submitForm();

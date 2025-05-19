@@ -609,35 +609,41 @@ export const MainContent = ({
                         key={question.sfid}
                         name={`complianceAnswers.${question.sfid}`}
                       >
-                        {({ field, form }: FormFieldProps<boolean>) => (
-                          <FormItem>
-                            <div className="flex items-start gap-2">
-                              <Checkbox
-                                id={`compliance-${question.sfid}`}
-                                checked={field.value}
-                                onCheckedChange={(checked) => {
-                                  form.setFieldValue(
-                                    `complianceAnswers.${question.sfid}`,
-                                    Boolean(checked)
-                                  );
-                                }}
-                              />
-                              <Label
-                                htmlFor={`compliance-${question.sfid}`}
-                                className="cursor-pointer"
-                              >
-                                <div
-                                  dangerouslySetInnerHTML={{
-                                    __html: question.question,
+                        {({ field, form }: FormFieldProps<boolean>) => {
+                          const fieldName = `complianceAnswers.${question.sfid}`;
+
+                          return (
+                            <FormItem>
+                              <div className="flex items-start gap-2">
+                                <Checkbox
+                                  id={`compliance-${question.sfid}`}
+                                  checked={field.value}
+                                  onCheckedChange={(checked) => {
+                                    form.setFieldValue(
+                                      fieldName,
+                                      Boolean(checked)
+                                    );
+                                    form.setFieldTouched(fieldName, true, true);
                                   }}
                                 />
-                              </Label>
-                            </div>
-                            <FormMessage
-                              name={`complianceAnswers.${question.sfid}`}
-                            />
-                          </FormItem>
-                        )}
+                                <Label
+                                  htmlFor={`compliance-${question.sfid}`}
+                                  className={`cursor-pointer`}
+                                >
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html: question.question,
+                                    }}
+                                  />
+                                </Label>
+                              </div>
+                              <FormMessage
+                                name="complianceAnswers"
+                                innerKey={question.sfid}
+                              />
+                            </FormItem>
+                          );
+                        }}
                       </FormField>
                     ))}
                   </div>
