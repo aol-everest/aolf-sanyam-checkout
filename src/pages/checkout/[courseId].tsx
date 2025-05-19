@@ -2,19 +2,14 @@ import { useEffect, useState } from 'react';
 import ErrorPage from 'next/error';
 import { FullScreenLoader } from '@/components/ui/loader';
 import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { fetchCourse, type CourseData } from '@/lib/api';
 import { Toaster } from '@/components/ui/toaster';
 import { CheckoutFormWithStripe } from '@/components/checkout/CheckoutFormWithStripe';
 import type { GetServerSideProps } from 'next';
 
-// Initialize Stripe with the direct key - outside component to avoid recreating
-const stripePromise = loadStripe(
-  'pk_test_51LnTljH6DOp7WA3cYAlemahUkCBTv94b8Cv0laMT4lnEtYShNGSScumTN0oLymu54H2b6TKzPstIaihee4pRrswn00yKstyPbS'
-);
-
-// Log that Stripe is initializing
-console.log('Stripe initializing globally:', !!stripePromise);
+// Log that Stripe will be initialized with the key from API
+console.log('Stripe will be initialized with key from API');
 
 const CheckoutPage = ({
   course: initialCourse,
@@ -34,11 +29,36 @@ const CheckoutPage = ({
     Record<string, string>
   >({});
   const [isMounted, setIsMounted] = useState(false);
+  const [stripePromise, setStripePromise] =
+    useState<Promise<Stripe | null> | null>(null);
 
   // Client-side only rendering
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Initialize Stripe when course data is available
+  useEffect(() => {
+    if (course) {
+      console.log('[CheckoutPage] Course payment data:', course.payment);
+
+      // Ensure publishable key exists and initialize Stripe
+      if (course.payment?.publishableKey) {
+        console.log(
+          '[CheckoutPage] Found publishable key:',
+          course.payment.publishableKey
+        );
+        setStripePromise(loadStripe(course.payment.publishableKey));
+      } else {
+        console.error('[CheckoutPage] No publishable key found in course data');
+        // Fallback to a default key if needed
+        const fallbackKey =
+          'pk_test_51LnTljH6DOp7WA3cYAlemahUkCBTv94b8Cv0laMT4lnEtYShNGSScumTN0oLymu54H2b6TKzPstIaihee4pRrswn00yKstyPbS';
+        console.log('[CheckoutPage] Using fallback key');
+        setStripePromise(loadStripe(fallbackKey));
+      }
+    }
+  }, [course]);
 
   useEffect(() => {
     if (initialCourse) {
@@ -72,7 +92,7 @@ const CheckoutPage = ({
     return <ErrorPage statusCode={404} title="Course Not Found" />;
   }
 
-  if (!isMounted) {
+  if (!isMounted || !stripePromise) {
     return <FullScreenLoader message="Initializing payment system..." />;
   }
 
