@@ -14,15 +14,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { US_STATES } from '@/components/checkout/constants';
-import type { CourseData } from '@/lib/api';
-// import Image from 'next/image';
-import { Loader2 } from 'lucide-react';
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
-import { Checkbox } from '@/components/ui/checkbox';
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { US_STATES } from "@/components/checkout/constants";
+import type { CourseData } from "@/lib/api";
+import Image from "next/image";
+import { Loader2 } from "lucide-react";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { Checkbox } from "@/components/ui/checkbox";
 // Import the StripeCardWrapper for when we need to reference it
 import { StripeCardWrapper } from '@/components/checkout/StripeCardWrapper';
 import { ProgramQuestionnaire } from '@/components/checkout/ProgramQuestionnaire';
@@ -418,27 +418,20 @@ export const MainContent = ({
               </div>
 
               {course?.course?.notes && (
-                <div className="bg-white rounded-xl shadow-sm p-8 mt-8">
-                  <h2 className="flex items-center gap-2 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-[#FF9361]"
-                    >
-                      <path d="M12 8H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h8" />
-                      <polyline points="16 7 21 12 16 17" />
-                    </svg>
-                    Notes:
-                  </h2>
+                <div className="section-box checkout-notes">
+                  <div className="note-title">
+                    <div className="note-icon">
+                      <Image
+                        src="/images/icon-menu-board.png"
+                        alt="notes"
+                        width={24}
+                        height={24}
+                      />
+                    </div>
+                    <div className="note-title-text">Notes:</div>
+                  </div>
 
-                  <div className="space-y-6 text-sm">
+                  <div className="note-content">
                     <div
                       dangerouslySetInnerHTML={{
                         __html: course?.course?.notes || '',
