@@ -310,10 +310,44 @@ export const CheckoutFormWithStripe = ({
                   AddOnProductIds: [values.expenseType],
                 }
               : undefined,
-            programQuestionnaire: {
-              ...questionnaireAnswers,
-              ...programQuestionnaireAnswers,
-            },
+            programQuestionnaire: (() => {
+              console.log(
+                'questionnaireAnswers from state:',
+                questionnaireAnswers
+              );
+              console.log(
+                'programQuestionnaireAnswers from formik:',
+                programQuestionnaireAnswers
+              );
+
+              // Prioritize values from questionnaireAnswers (most recent)
+              // but fall back to programQuestionnaireAnswers if needed
+              const mergedData = {
+                ...programQuestionnaireAnswers, // Start with formik values
+                ...questionnaireAnswers, // Override with state values (most recent)
+              };
+              console.log(
+                'Merged questionnaire data before filtering:',
+                mergedData
+              );
+
+              // Fix for backend: Send "N/A" instead of empty strings
+              // This ensures the backend knows we've processed this question
+              const finalData = Object.entries(mergedData).reduce(
+                (acc, [key, value]) => {
+                  // Replace empty strings with "N/A" to ensure data is sent
+                  acc[key] = value && value.trim() !== '' ? value : 'N/A';
+                  return acc;
+                },
+                {} as Record<string, string>
+              );
+
+              console.log(
+                'Final questionnaire data with N/A values:',
+                finalData
+              );
+              return finalData;
+            })(),
             complianceQuestionnaire: complianceAnswers,
             paymentTokenInfo: {
               id: token.id,

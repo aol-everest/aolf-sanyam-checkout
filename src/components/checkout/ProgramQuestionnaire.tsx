@@ -135,16 +135,23 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
     values: QuestionnaireFormValues,
     { setSubmitting }: FormikHelpers<QuestionnaireFormValues>
   ) => {
+    console.log('ProgramQuestionnaire form submitted with values:', values);
+    console.log('Validation status:', validationSchema.isValidSync(values));
+
     setIsSubmitting(true);
 
     if (onSubmit) {
+      console.log('Calling onSubmit with questionnaire values');
       onSubmit(values);
+    } else {
+      console.warn('No onSubmit handler provided to ProgramQuestionnaire');
     }
 
     // Small delay to indicate processing
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitting(false);
+      console.log('Closing questionnaire dialog after submission');
       onOpenChange(false); // Close dialog after successful submission
     }, 500);
   };
@@ -204,6 +211,9 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                               value="Yes"
                               checked={values[question.sfid] === 'Yes'}
                               onChange={() => {
+                                console.log(
+                                  `Setting ${question.sfid} to "Yes"`
+                                );
                                 setFieldValue(question.sfid, 'Yes');
                                 setFieldTouched(question.sfid, true, true);
                               }}
@@ -224,6 +234,7 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                               value="No"
                               checked={values[question.sfid] === 'No'}
                               onChange={() => {
+                                console.log(`Setting ${question.sfid} to "No"`);
                                 setFieldValue(question.sfid, 'No');
                                 setFieldTouched(question.sfid, true, true);
                               }}

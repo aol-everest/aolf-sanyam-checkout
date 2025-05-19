@@ -177,8 +177,17 @@ export const MainContent = ({
 
   // Handle questionnaire submission
   const handleQuestionnaireSubmit = (values: Record<string, string>) => {
-    // Store the questionnaire answers
+    // Log incoming questionnaire values
+    console.log('Questionnaire submitted with values:', values);
+
+    // Store the questionnaire answers in local state
     setQuestionnaireAnswers(values);
+    // Also pass to the parent component using the prop if available
+    if (_setQuestionnaireAnswers) {
+      _setQuestionnaireAnswers(values);
+      console.log('Updated parent component with questionnaire answers');
+    }
+    console.log('Updated questionnaireAnswers state with:', values);
 
     // Here we need to update the main formik form with the questionnaire answers
     // Format the values to match the expected structure in the main form
@@ -189,12 +198,23 @@ export const MainContent = ({
       programQuestionnaireValues[sfid] = values[sfid];
     });
 
+    console.log(
+      'Created programQuestionnaireValues for formik:',
+      programQuestionnaireValues
+    );
+
     // Update the main formik form with the questionnaire answers
     if (typeof formik.setFieldValue === 'function') {
       formik.setFieldValue('programQuestionnaire', programQuestionnaireValues);
+      console.log('Updated formik with programQuestionnaire values');
+    } else {
+      console.warn(
+        'formik.setFieldValue is not a function, cannot update formik'
+      );
     }
 
     // Proceed with form submission including questionnaire answers
+    console.log('Proceeding with form submission (formik.handleSubmit)');
     formik.handleSubmit();
   };
 
