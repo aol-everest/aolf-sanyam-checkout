@@ -323,9 +323,6 @@ export const MainContent = ({
                                 {({ field, form }: FormFieldProps<string>) => {
                                   // Explicitly check for errors and touched state
                                   const fieldName = `programQuestionnaire.${question.sfid}`;
-                                  const hasError =
-                                    form.touched[fieldName] &&
-                                    form.errors[fieldName];
 
                                   return (
                                     <FormItem className="space-y-3">
@@ -396,16 +393,16 @@ export const MainContent = ({
                                           </Label>
                                         </div>
                                       </div>
-                                      {/* Direct error display for debugging */}
-                                      {hasError && (
-                                        <div className="text-sm text-red-500">
-                                          {String(form.errors[fieldName])}
-                                        </div>
-                                      )}
-                                      {/* Show which questions are required */}
+
+                                      {/* Use FormMessage component to show validation errors */}
+                                      <FormMessage
+                                        name="programQuestionnaire"
+                                        innerKey={question.sfid}
+                                      />
+
+                                      {/* Show error if question is required but no answer selected */}
                                       {question.isRequired &&
                                         !field.value &&
-                                        !hasError &&
                                         form.submitCount > 0 && (
                                           <div className="text-sm text-red-500">
                                             This question is required
@@ -679,83 +676,6 @@ export const MainContent = ({
           </div>
         </div>
       </div>
-
-      {/* Questionnaire dialog commented out for debugging */}
-      {/* <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Program Questionnaire</DialogTitle>
-            <DialogDescription>
-              Please answer the following questions to complete your
-              registration.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 py-4 overflow-y-auto max-h-[50vh] pr-6">
-            {course.programQuestionnaire?.map((question) => (
-              <div key={question.sfid} className="space-y-2">
-                <Label className="text-base">
-                  {question.question.replace(/<\/?p>/g, '')}
-                  {question.isRequired && (
-                    <span className="text-red-500">*</span>
-                  )}
-                </Label>
-                {question.questionType === 'Yes/No' && (
-                  <div className="flex gap-4">
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        id={`${question.sfid}-yes`}
-                        name={question.sfid}
-                        value="Yes"
-                        onChange={(e) =>
-                          setQuestionnaireAnswers((prev) => ({
-                            ...prev,
-                            [question.sfid]: e.target.value,
-                          }))
-                        }
-                        className="mr-2"
-                      />
-                      <Label htmlFor={`${question.sfid}-yes`}>Yes</Label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        id={`${question.sfid}-no`}
-                        name={question.sfid}
-                        value="No"
-                        onChange={(e) =>
-                          setQuestionnaireAnswers((prev) => ({
-                            ...prev,
-                            [question.sfid]: e.target.value,
-                          }))
-                        }
-                        className="mr-2"
-                      />
-                      <Label htmlFor={`${question.sfid}-no`}>No</Label>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="mt-6">
-            <Button
-              type="button"
-              onClick={() => onQuestionnaireSubmit(formik.values)}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Submit'
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog> */}
     </>
   );
 };

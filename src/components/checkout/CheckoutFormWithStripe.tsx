@@ -207,7 +207,7 @@ export const CheckoutFormWithStripe = ({
             },
             complianceQuestionnaire: complianceAnswers,
             paymentTokenInfo: {
-              token: token.id,
+              id: token.id,
               provider: 'stripe',
               saveForFuture: false,
             },
@@ -302,117 +302,188 @@ export const CheckoutFormWithStripe = ({
 
         // Touch all program questionnaire fields
         if (values.programQuestionnaire) {
+          console.log(
+            'Setting all program questionnaire fields as touched:',
+            Object.keys(values.programQuestionnaire)
+          );
           Object.keys(values.programQuestionnaire).forEach((key) => {
-            formikRef.current?.setFieldTouched(
-              `programQuestionnaire.${key}`,
-              true,
-              false
-            );
+            const fieldPath = `programQuestionnaire.${key}`;
+            formikRef.current?.setFieldTouched(fieldPath, true, false);
+            console.log(`Set ${fieldPath} as touched`);
           });
         }
 
         // Now validate the form
-        formikRef.current.validateForm().then((errors) => {
-          console.log('Formik errors:', errors);
-
-          // Collect all error messages
-          const errorMessages: string[] = [];
-
-          // Process top-level errors
-          Object.entries(errors).forEach(([field, message]) => {
-            if (typeof message === 'string') {
-              errorMessages.push(`${field}: ${message}`);
-            }
-          });
-
-          // Process nested errors in programQuestionnaire if any
-          if (
-            errors.programQuestionnaire &&
-            typeof errors.programQuestionnaire === 'object'
-          ) {
-            Object.entries(errors.programQuestionnaire).forEach(
-              ([field, message]) => {
-                if (typeof message === 'string') {
-                  errorMessages.push(`Question ${field}: ${message}`);
-                }
-              }
-            );
-          }
-
-          // Process nested errors in complianceAnswers if any
-          if (
-            errors.complianceAnswers &&
-            typeof errors.complianceAnswers === 'object'
-          ) {
+        formikRef.current
+          .validateForm()
+          .then((errors: Record<string, unknown>) => {
+            console.log('Formik errors:', errors);
             console.log(
-              'Processing compliance errors:',
-              errors.complianceAnswers
+              'Program questionnaire values:',
+              values.programQuestionnaire
             );
-            Object.entries(errors.complianceAnswers).forEach(
-              ([field, message]) => {
-                if (typeof message === 'string') {
-                  // Get compliance question data from course if available
-                  const questionData = course.complianceQuestionnaire?.find(
-                    (q) => q.sfid === field
+
+            // Add validation for program questionnaire if not already present
+            if (!errors.programQuestionnaire && values.programQuestionnaire) {
+              errors.programQuestionnaire = {} as Record<string, string>;
+
+              // Check each question and add error if empty
+              Object.entries(values.programQuestionnaire).forEach(
+                ([key, value]) => {
+                  // Find the question in course data
+                  const question = course.programQuestionnaire?.find(
+                    (q) => q.sfid === key
                   );
-                  const questionLabel = questionData
-                    ? `Compliance: ${questionData.question
-                        .replace(/<[^>]*>?/gm, '')
-                        .substring(0, 50)}...`
-                    : `Compliance ${field}`;
 
-                  const errorMessage = `${questionLabel}: ${message}`;
-                  console.log(`Adding compliance error: ${errorMessage}`);
-                  errorMessages.push(errorMessage);
+                  // Only validate required questions
+                  if (question?.isRequired && (!value || value === '')) {
+                    console.log(
+                      `Adding validation error for program question ${key}`
+                    );
+                    (errors.programQuestionnaire as Record<string, string>)[
+                      key
+                    ] = 'This question is required';
+                  }
                 }
+              );
+
+              // If we added any errors, log them
+              const programErrors = errors.programQuestionnaire as Record<
+                string,
+                string
+              >;
+              if (Object.keys(programErrors).length > 0) {
+                console.log(
+                  'Added programQuestionnaire errors:',
+                  programErrors
+                );
+              } else {
+                // If no errors were added, remove the empty object
+                delete errors.programQuestionnaire;
               }
-            );
-          }
+            }
 
-          // Check for card errors separately
-          if (updatedCardState.empty) {
-            toast({
-              variant: 'destructive',
-              title: 'Payment Error',
-              description: 'Please enter your card information.',
-            });
-            return;
-          } else if (!updatedCardState.complete) {
-            toast({
-              variant: 'destructive',
-              title: 'Payment Error',
-              description: 'Please complete your card information.',
-            });
-            return;
-          } else if (updatedCardState.error) {
-            toast({
-              variant: 'destructive',
-              title: 'Payment Error',
-              description: updatedCardState.error,
-            });
-            return;
-          }
+            // Collect all error messages
+            const errorMessages: string[] = [];
 
-          // Show a single toast with all error messages
-          if (errorMessages.length > 0) {
-            toast({
-              variant: 'destructive',
-              title: 'Please fix the following errors:',
-              description: (
-                <ul className="list-disc pl-5 mt-2">
-                  {errorMessages.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              ),
-            });
-            return;
-          }
+            // Process top-level errors
+            Object.entries(errors).forEach(([field, message]) => {
+              if (typeof message === 'string') {
+                errorMessages.push(`${field}: ${message}`);
+              }
 
-          // Submit after touching all fields
-          formikRef.current?.submitForm();
-          console.log('Form validation errors:', errors);
-        });
+              // Special handling for programQuestionnaire object
+              if (field === 'programQuestionnaire') {
+                console.log('Found programQuestionnaire errors:', message);
+              }
+            });
+
+            // Process nested errors in programQuestionnaire if any
+            if (
+              errors.programQuestionnaire &&
+              typeof errors.programQuestionnaire === 'object'
+            ) {
+              console.log(
+                'Processing program questionnaire errors:',
+                errors.programQuestionnaire
+              );
+              Object.entries(errors.programQuestionnaire).forEach(
+                ([field, message]) => {
+                  if (typeof message === 'string') {
+                    // Get question data from course if available
+                    const questionData = course.programQuestionnaire?.find(
+                      (q) => q.sfid === field
+                    );
+                    const questionLabel = questionData
+                      ? `Question: ${questionData.question
+                          .replace(/<[^>]*>?/gm, '')
+                          .substring(0, 50)}...`
+                      : `Question ${field}`;
+
+                    const errorMessage = `${questionLabel}: ${message}`;
+                    console.log(
+                      `Adding program questionnaire error: ${errorMessage}`
+                    );
+                    errorMessages.push(errorMessage);
+                  }
+                }
+              );
+            }
+
+            // Process nested errors in complianceAnswers if any
+            if (
+              errors.complianceAnswers &&
+              typeof errors.complianceAnswers === 'object'
+            ) {
+              console.log(
+                'Processing compliance errors:',
+                errors.complianceAnswers
+              );
+              Object.entries(errors.complianceAnswers).forEach(
+                ([field, message]) => {
+                  if (typeof message === 'string') {
+                    // Get compliance question data from course if available
+                    const questionData = course.complianceQuestionnaire?.find(
+                      (q) => q.sfid === field
+                    );
+                    const questionLabel = questionData
+                      ? `Compliance: ${questionData.question
+                          .replace(/<[^>]*>?/gm, '')
+                          .substring(0, 50)}...`
+                      : `Compliance ${field}`;
+
+                    const errorMessage = `${questionLabel}: ${message}`;
+                    console.log(`Adding compliance error: ${errorMessage}`);
+                    errorMessages.push(errorMessage);
+                  }
+                }
+              );
+            }
+
+            // Check for card errors separately
+            if (updatedCardState.empty) {
+              toast({
+                variant: 'destructive',
+                title: 'Payment Error',
+                description: 'Please enter your card information.',
+              });
+              return;
+            } else if (!updatedCardState.complete) {
+              toast({
+                variant: 'destructive',
+                title: 'Payment Error',
+                description: 'Please complete your card information.',
+              });
+              return;
+            } else if (updatedCardState.error) {
+              toast({
+                variant: 'destructive',
+                title: 'Payment Error',
+                description: updatedCardState.error,
+              });
+              return;
+            }
+
+            // Show a single toast with all error messages
+            if (errorMessages.length > 0) {
+              toast({
+                variant: 'destructive',
+                title: 'Please fix the following errors:',
+                description: (
+                  <ul className="list-disc pl-5 mt-2">
+                    {errorMessages.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                ),
+              });
+              return;
+            }
+
+            // Submit after touching all fields
+            formikRef.current?.submitForm();
+            console.log('Form validation errors:', errors);
+          });
       }
     }, 300);
   };

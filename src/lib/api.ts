@@ -239,7 +239,7 @@ export interface CheckoutPayload {
       content?: string;
     };
     paymentTokenInfo: {
-      token: string;
+      id: string;
       provider: string;
       saveForFuture: boolean;
     };
@@ -290,24 +290,13 @@ export async function fetchOrder(orderId: string): Promise<OrderData> {
   }
 }
 
-export async function submitPayment(data: {
-  token: string;
-  user: UserData;
-  courseId: string;
-  questionnaireAnswers: Record<string, string>;
-}) {
-  // Mock API call using the data
-  console.log('Processing payment with data:', data);
-  return { orderId: 'mock-order-id' };
-}
-
 export async function submitCheckout(
   workshopId: string,
   data: CheckoutPayload
 ): Promise<{ orderId: string }> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/checkout/workshops/${workshopId}`,
+      `${API_BASE_URL}/checkout/workshops/async/${workshopId}`,
       {
         method: 'POST',
         headers: {
@@ -322,7 +311,14 @@ export async function submitCheckout(
       throw new Error(errorData.message || 'Failed to process checkout');
     }
 
-    return await response.json();
+    const responseData = await response.json();
+
+    // Extract orderId from the success response structure
+    if (responseData.status === 'success' && responseData.data?.orderId) {
+      return { orderId: responseData.data.orderId };
+    }
+
+    throw new Error(responseData.message || 'Failed to process checkout');
   } catch (error) {
     console.error('Error submitting checkout:', error);
     throw error;
