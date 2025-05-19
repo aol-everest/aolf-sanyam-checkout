@@ -27,6 +27,8 @@ export interface FormikFormValues {
   agreeTerms: boolean;
   complianceAnswers: Record<string, boolean>;
   programQuestionnaire?: Record<string, string>;
+  recaptchaToken?: string;
+  recaptchaAction?: string;
 }
 
 export const formikValidationSchema = Yup.object().shape({

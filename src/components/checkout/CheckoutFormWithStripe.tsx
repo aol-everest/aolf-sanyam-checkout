@@ -16,6 +16,7 @@ import {
 } from '@/lib/api';
 import { MainContent } from '@/components/checkout/MainContent';
 import { useCardElement } from '@/components/checkout/StripeCardWrapper';
+import { useGoogleReCaptcha } from '@google-recaptcha/react';
 
 // Direct access to global card state without React
 const getCardState = () => {
@@ -58,6 +59,9 @@ export const CheckoutFormWithStripe = ({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const formikRef = React.useRef<FormikProps<FormikFormValues>>(null);
 
+  // Use Google reCAPTCHA hook
+  const { executeV3 } = useGoogleReCaptcha();
+
   // Access card element state from context for React rendering
   const cardContext = useCardElement();
 
@@ -75,6 +79,111 @@ export const CheckoutFormWithStripe = ({
           'Payment system not initialized. Please refresh and try again.',
       });
       return;
+    }
+
+    // Verify with reCAPTCHA first
+    if (!executeV3) {
+      console.error('reCAPTCHA not available');
+
+      // In development, we'll allow proceeding even without reCAPTCHA
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          'Development mode: Proceeding without reCAPTCHA verification'
+        );
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Verification Error',
+          description:
+            'Security verification service is not available. Please refresh and try again.',
+        });
+        return;
+      }
+    }
+
+    // Store recaptcha token for later use
+    let recaptchaToken = '';
+    let isRecaptchaValid = false;
+
+    try {
+      if (executeV3) {
+        // Execute reCAPTCHA with action name
+        recaptchaToken = await executeV3('checkout');
+        console.log('reCAPTCHA token received:', {
+          length: recaptchaToken?.length || 0,
+          first10Chars: recaptchaToken?.substring(0, 10) || '',
+        });
+
+        if (!recaptchaToken) {
+          console.warn('Empty reCAPTCHA token received');
+
+          // Only block in production
+          if (process.env.NODE_ENV !== 'development') {
+            toast({
+              variant: 'destructive',
+              title: 'Verification Failed',
+              description:
+                'Security verification failed. Please try again later.',
+            });
+            return;
+          }
+        }
+
+        // Check if reCAPTCHA token is valid (not just empty)
+        // For localhost, reCAPTCHA might return a token even if domain is not valid
+        isRecaptchaValid = Boolean(
+          recaptchaToken && recaptchaToken.length > 20
+        );
+
+        // In development environment on localhost, we can detect invalid tokens
+        // by checking the token format or length
+        if (!isRecaptchaValid) {
+          console.warn(
+            'reCAPTCHA validation suspicious - token may be invalid',
+            {
+              tokenLength: recaptchaToken?.length || 0,
+              isDev: process.env.NODE_ENV === 'development',
+            }
+          );
+
+          // For strict environments, uncomment this to block checkout on invalid tokens
+          // Even in development mode, we should prevent requests with invalid tokens
+          if (process.env.NODE_ENV !== 'development') {
+            toast({
+              variant: 'destructive',
+              title: 'Security Check Failed',
+              description:
+                'Domain verification failed. Please ensure you are accessing from an authorized domain.',
+            });
+            return;
+          } else {
+            // In development mode, continue despite invalid token
+            console.log(
+              'Development mode: Continuing with checkout despite invalid reCAPTCHA token'
+            );
+          }
+        } else {
+          console.log('reCAPTCHA verification successful');
+        }
+      } else if (process.env.NODE_ENV === 'development') {
+        // In development, create a mock token when reCAPTCHA is not available
+        console.log('Development mode: Creating mock reCAPTCHA token');
+        recaptchaToken = 'dev_mode_mock_token_' + Date.now();
+      }
+    } catch (recaptchaError) {
+      console.error('reCAPTCHA error:', recaptchaError);
+
+      // Only block in production
+      if (process.env.NODE_ENV !== 'development') {
+        toast({
+          variant: 'destructive',
+          title: 'Verification Error',
+          description: 'Security verification failed. Please try again later.',
+        });
+        return;
+      } else {
+        console.warn('Development mode: Proceeding despite reCAPTCHA error');
+      }
     }
 
     // Force validation of the card element before checking its state
@@ -214,9 +323,21 @@ export const CheckoutFormWithStripe = ({
           },
         };
 
-        // Submit payment
+        // Ensure we have a valid reCAPTCHA token before submitting
+        const tokenToSubmit = recaptchaToken || values.recaptchaToken || '';
+        if (!tokenToSubmit) {
+          console.error('Cannot submit payment: No reCAPTCHA token available');
+          throw new Error(
+            'Security verification required. Please enable reCAPTCHA and try again.'
+          );
+        }
+
+        // Submit payment - pass recaptcha as separate parameter
         console.log('Submitting checkout with token...');
-        const checkoutResult = await submitCheckout(course.id, checkoutData);
+        const checkoutResult = await submitCheckout(course.id, checkoutData, {
+          token: tokenToSubmit,
+          action: values.recaptchaAction || 'checkout',
+        });
 
         // Handle success
         toast({
@@ -248,12 +369,163 @@ export const CheckoutFormWithStripe = ({
 
   // Handle form submission
   const handleSubmit = (values: FormikFormValues) => {
-    processPayment(values);
+    // Make sure the form has a reCAPTCHA token
+    if (!values.recaptchaToken && executeV3) {
+      // If there's no token in the form but we have the reCAPTCHA API available,
+      // capture a token before proceeding with payment
+      executeV3('form_submit')
+        .then((token) => {
+          if (token) {
+            // Update form values with the new token
+            if (formikRef.current) {
+              formikRef.current.setFieldValue('recaptchaToken', token);
+              formikRef.current.setFieldValue('recaptchaAction', 'form_submit');
+
+              // Now proceed with payment with the updated values
+              const updatedValues = {
+                ...values,
+                recaptchaToken: token,
+                recaptchaAction: 'form_submit',
+              };
+              processPayment(updatedValues);
+            } else {
+              processPayment(values);
+            }
+          } else {
+            // If no token could be obtained, still try to process anyway
+            // The server will reject if reCAPTCHA is strictly required
+            processPayment(values);
+          }
+        })
+        .catch((error) => {
+          console.error(
+            'Failed to get reCAPTCHA token for form submit:',
+            error
+          );
+          // Still try to process payment even if reCAPTCHA fails
+          // The server will enforce reCAPTCHA if required
+          processPayment(values);
+        });
+    } else {
+      // If we already have a token or reCAPTCHA isn't available, proceed directly
+      processPayment(values);
+    }
   };
 
   // Manual trigger for button click
-  const handleManualSubmit = () => {
+  const handleManualSubmit = async () => {
     console.log('Manual form submission requested');
+
+    // Verify with reCAPTCHA first on manual submit
+    if (!executeV3) {
+      // Mandatory reCAPTCHA check - don't allow submission without reCAPTCHA
+      console.error('reCAPTCHA verification not available');
+
+      // In development, allow proceeding without reCAPTCHA
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          'Development mode: Proceeding without reCAPTCHA for manual submit'
+        );
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Security Verification Required',
+          description:
+            'This site requires security verification to process your checkout. Please enable reCAPTCHA and try again.',
+        });
+        return;
+      }
+    }
+
+    let recaptchaToken = '';
+
+    if (executeV3) {
+      try {
+        // Store token in form ref so it can be used during form submission
+        recaptchaToken = await executeV3('checkout_button');
+        console.log('Manual submit reCAPTCHA token:', {
+          length: recaptchaToken?.length || 0,
+          first10Chars: recaptchaToken?.substring(0, 10) || '',
+        });
+
+        // Strict validation - must have token to proceed
+        if (!recaptchaToken) {
+          console.warn('Empty reCAPTCHA token received on manual submit');
+
+          // Only block in production
+          if (process.env.NODE_ENV !== 'development') {
+            toast({
+              variant: 'destructive',
+              title: 'Verification Failed',
+              description: 'Security verification failed. Please try again.',
+            });
+            return;
+          }
+        }
+
+        // Check token validity - use lower threshold (20 chars) for development
+        if (recaptchaToken.length < 20) {
+          console.warn('reCAPTCHA token may be invalid on manual submit:', {
+            tokenLength: recaptchaToken?.length || 0,
+          });
+
+          // Block submission for invalid tokens in production only
+          if (process.env.NODE_ENV !== 'development') {
+            toast({
+              variant: 'destructive',
+              title: 'Security Verification Failed',
+              description:
+                'Invalid verification token. Please ensure you are accessing from an authorized domain.',
+            });
+            return;
+          } else {
+            console.log(
+              'Development mode: Allowing manual submission with suspect reCAPTCHA token'
+            );
+          }
+        }
+
+        console.log('reCAPTCHA verification successful on manual submit');
+
+        // Store token in a hidden field or in formikRef for use during submission
+        if (formikRef.current) {
+          // Create a recaptcha field in the form values if it doesn't exist
+          formikRef.current.setFieldValue('recaptchaToken', recaptchaToken);
+          formikRef.current.setFieldValue('recaptchaAction', 'checkout_button');
+        }
+      } catch (recaptchaError) {
+        console.error('reCAPTCHA error on manual submit:', recaptchaError);
+
+        // Only block in production
+        if (process.env.NODE_ENV !== 'development') {
+          toast({
+            variant: 'destructive',
+            title: 'Verification Error',
+            description: 'Security verification failed. Please try again.',
+          });
+          return;
+        } else {
+          console.warn(
+            'Development mode: Proceeding with manual submit despite reCAPTCHA error'
+          );
+        }
+      }
+    } else if (process.env.NODE_ENV === 'development') {
+      // In development, create a mock token when reCAPTCHA is not available
+      console.log(
+        'Development mode: Creating mock reCAPTCHA token for manual submit'
+      );
+      recaptchaToken = 'dev_mode_mock_token_manual_' + Date.now();
+
+      // Store the mock token
+      if (formikRef.current) {
+        formikRef.current.setFieldValue('recaptchaToken', recaptchaToken);
+        formikRef.current.setFieldValue(
+          'recaptchaAction',
+          'checkout_button_mock'
+        );
+      }
+    }
 
     // Get current card state directly from window global
     const cardState = getCardState();
@@ -517,6 +789,8 @@ export const CheckoutFormWithStripe = ({
             }),
             {}
           ) || {},
+        recaptchaToken: '', // Initialize reCAPTCHA token field
+        recaptchaAction: '', // Initialize reCAPTCHA action field
       }}
       validationSchema={formikValidationSchema}
       onSubmit={handleSubmit}

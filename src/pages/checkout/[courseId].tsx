@@ -7,9 +7,17 @@ import { fetchCourse, type CourseData } from '@/lib/api';
 import { Toaster } from '@/components/ui/toaster';
 import { CheckoutFormWithStripe } from '@/components/checkout/CheckoutFormWithStripe';
 import type { GetServerSideProps } from 'next';
+import { GoogleReCaptchaProvider } from '@google-recaptcha/react';
 
 // Log that Stripe will be initialized with the key from API
 console.log('Stripe will be initialized with key from API');
+
+// reCAPTCHA site key - replace with your actual site key
+const RECAPTCHA_SITE_KEY =
+  process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ||
+  (process.env.NODE_ENV === 'development'
+    ? '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' // Google's test key
+    : ''); // Empty string fallback (though this should never happen in production)
 
 const CheckoutPage = ({
   course: initialCourse,
@@ -98,51 +106,53 @@ const CheckoutPage = ({
 
   console.log('[CheckoutPage] Rendering checkout form with Stripe');
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Elements
-        stripe={stripePromise}
-        options={{
-          fonts: [
-            {
-              cssSrc:
-                'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
+    <GoogleReCaptchaProvider siteKey={RECAPTCHA_SITE_KEY} type="v3">
+      <div className="min-h-screen bg-gray-50">
+        <Elements
+          stripe={stripePromise}
+          options={{
+            fonts: [
+              {
+                cssSrc:
+                  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
+              },
+            ],
+            appearance: {
+              theme: 'stripe',
+              variables: {
+                colorPrimary: '#FF9361',
+                colorBackground: '#ffffff',
+                colorText: '#424770',
+                colorDanger: '#9e2146',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                spacingUnit: '4px',
+                borderRadius: '4px',
+              },
             },
-          ],
-          appearance: {
-            theme: 'stripe',
-            variables: {
-              colorPrimary: '#FF9361',
-              colorBackground: '#ffffff',
-              colorText: '#424770',
-              colorDanger: '#9e2146',
-              fontFamily: 'Inter, system-ui, sans-serif',
-              spacingUnit: '4px',
-              borderRadius: '4px',
-            },
-          },
-          loader: 'auto',
-        }}
-      >
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col items-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-900 font-inter">
-              {course.title}
-            </h1>
+            loader: 'auto',
+          }}
+        >
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col items-center mb-8">
+              <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-900 font-inter">
+                {course.title}
+              </h1>
+            </div>
+            {/* StripeCardWrapper is already inside the main content */}
+            <CheckoutFormWithStripe
+              course={course}
+              showQuestionnaire={showQuestionnaire}
+              setShowQuestionnaire={setShowQuestionnaire}
+              questionnaireAnswers={questionnaireAnswers}
+              setQuestionnaireAnswers={setQuestionnaireAnswers}
+              loading={loading}
+              setLoading={setLoading}
+            />
           </div>
-          {/* StripeCardWrapper is already inside the main content */}
-          <CheckoutFormWithStripe
-            course={course}
-            showQuestionnaire={showQuestionnaire}
-            setShowQuestionnaire={setShowQuestionnaire}
-            questionnaireAnswers={questionnaireAnswers}
-            setQuestionnaireAnswers={setQuestionnaireAnswers}
-            loading={loading}
-            setLoading={setLoading}
-          />
-        </div>
-      </Elements>
-      <Toaster />
-    </div>
+        </Elements>
+        <Toaster />
+      </div>
+    </GoogleReCaptchaProvider>
   );
 };
 
