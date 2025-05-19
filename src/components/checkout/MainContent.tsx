@@ -1,13 +1,13 @@
-import * as React from 'react';
+import * as React from "react";
 import {
   FormField,
   FormItem,
   FormMessage,
   FormikFormValues,
   FormFieldProps,
-} from '@/components/ui/formik-form';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/formik-form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -24,8 +24,8 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { Checkbox } from "@/components/ui/checkbox";
 // Import the StripeCardWrapper for when we need to reference it
-import { StripeCardWrapper } from '@/components/checkout/StripeCardWrapper';
-import { ProgramQuestionnaire } from '@/components/checkout/ProgramQuestionnaire';
+import { StripeCardWrapper } from "@/components/checkout/StripeCardWrapper";
+import { ProgramQuestionnaire } from "@/components/checkout/ProgramQuestionnaire";
 
 interface ResidentialAddOnProduct {
   sfid: string;
@@ -136,23 +136,23 @@ export const MainContent = ({
 
     // Touch all fields to trigger validation display
     Object.keys(mainFormValues).forEach((fieldName) => {
-      if (typeof formik.setFieldTouched === 'function') {
+      if (typeof formik.setFieldTouched === "function") {
         formik.setFieldTouched(fieldName, true, false);
       }
     });
 
     // Check required fields in main form (this is a basic validation)
     const requiredFields = [
-      'firstName',
-      'lastName',
-      'email',
-      'phone',
-      'address',
-      'city',
-      'state',
-      'zip',
-      'expenseType',
-      'agreeTerms',
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "address",
+      "city",
+      "state",
+      "zip",
+      "expenseType",
+      "agreeTerms",
     ];
     requiredFields.forEach((field) => {
       const value = (mainFormValues as Record<string, unknown>)[field];
@@ -190,14 +190,9 @@ export const MainContent = ({
     });
 
     // Update the main formik form with the questionnaire answers
-    if (typeof formik.setFieldValue === 'function') {
-      formik.setFieldValue('programQuestionnaire', programQuestionnaireValues);
+    if (typeof formik.setFieldValue === "function") {
+      formik.setFieldValue("programQuestionnaire", programQuestionnaireValues);
     }
-
-    console.log('Combined form data:', {
-      ...formik.values,
-      programQuestionnaire: programQuestionnaireValues,
-    });
 
     // Proceed with form submission including questionnaire answers
     formik.handleSubmit();
@@ -427,7 +422,7 @@ export const MainContent = ({
 
               {course?.course?.notes && (
                 <div className="bg-white rounded-xl shadow-sm p-8 mt-8">
-                  <div className="flex items-center gap-2 mb-4">
+                  <h2 className="flex items-center gap-2 mb-4">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
@@ -449,7 +444,7 @@ export const MainContent = ({
                   <div className="space-y-6 text-sm">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: course?.course?.notes || '',
+                        __html: course?.course?.notes || "",
                       }}
                     />
                   </div>
@@ -877,7 +872,7 @@ export const MainContent = ({
                   </div>
 
                   <div className="text-sm">
-                    For any health related questions, please contact us at{' '}
+                    For any health related questions, please contact us at{" "}
                     <a
                       href="mailto:health.info@us.artofliving.org"
                       className="text-[#FF9361]"
@@ -898,7 +893,7 @@ export const MainContent = ({
                         Processing...
                       </>
                     ) : (
-                      'Confirm and Pay'
+                      "Confirm and Pay"
                     )}
                   </Button>
                 </div>
