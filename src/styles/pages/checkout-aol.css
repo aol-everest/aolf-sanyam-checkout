@@ -162,6 +162,12 @@ main.checkout-aol {
         }
       }
     }
+    .card-detail-wrapper {
+      margin-top: 16px;
+      label {
+        color: #9598a6;
+      }
+    }
   }
   .trust-score {
     display: flex;

@@ -410,12 +410,9 @@ export const MainContent = ({
                           initialValues={questionnaireAnswers}
                         />
                       )}
-
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <StripeCardWrapper />
-                      </div>
-                    </div>
+                  </div>
+                  <div className="card-detail-wrapper">
+                    <StripeCardWrapper />
                   </div>
                 </div>
               </div>
