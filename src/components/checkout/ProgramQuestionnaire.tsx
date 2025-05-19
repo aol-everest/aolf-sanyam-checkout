@@ -253,10 +253,14 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                       {/* Text input for Text questions */}
                       {question.questionType === 'Text' && (
                         <Field name={question.sfid}>
-                          {({ field }: FieldProps) => (
+                          {({ field, form }: FieldProps) => (
                             <Input
                               {...field}
                               placeholder="Your answer"
+                              onBlur={(e) => {
+                                field.onBlur(e);
+                                form.setFieldTouched(question.sfid, true, true);
+                              }}
                               className={`${
                                 touched[question.sfid] && errors[question.sfid]
                                   ? 'border-red-500'
@@ -273,8 +277,15 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                           <Select
                             value={values[question.sfid] || ''}
                             onValueChange={(value) => {
+                              console.log(
+                                `Setting ${question.sfid} picklist to "${value}"`
+                              );
                               setFieldValue(question.sfid, value);
                               setFieldTouched(question.sfid, true, true);
+                              // Force validation to run immediately after selection
+                              setTimeout(() => {
+                                setFieldTouched(question.sfid, true, true);
+                              }, 0);
                             }}
                           >
                             <SelectTrigger
@@ -283,6 +294,9 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                                   ? 'border-red-500'
                                   : ''
                               }`}
+                              onBlur={() =>
+                                setFieldTouched(question.sfid, true, true)
+                              }
                             >
                               <SelectValue placeholder="Select an option" />
                             </SelectTrigger>
