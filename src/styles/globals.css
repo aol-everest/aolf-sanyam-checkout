@@ -15,7 +15,13 @@
   --font-heading: 'Lora', serif;
 }
 
-.font-lora, h1, h2, h3, h4, h5, h6 {
+.font-lora,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
 }
 
@@ -34,12 +40,12 @@ body {
 }
 
 .header-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 60px;
-    border-bottom: 1px solid #e9e9e9;
-    background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 60px;
+  border-bottom: 1px solid #e9e9e9;
+  background: #fff;
 }
 
 /* Phone Input Styles */
@@ -201,36 +207,25 @@ body {
 /* Toast styles */
 [role='status'],
 [role='alert'] {
-  background-color: white !important;
   border: 1px solid hsl(var(--border));
-  color: hsl(var(--foreground)) !important;
-}
-
-[role='status'] h1,
-[role='status'] h2,
-[role='status'] p,
-[role='alert'] h1,
-[role='alert'] h2,
-[role='alert'] p {
   color: hsl(var(--foreground)) !important;
 }
 
 [role='status'][data-state='open'],
 [role='alert'][data-state='open'] {
   opacity: 1 !important;
-  background-color: white !important;
 }
 
 /* Toast variants */
 [role='alert'][data-variant='destructive'] {
-  background-color: hsl(var(--destructive)) !important;
-  border-color: hsl(var(--destructive)) !important;
+  background-color: #fee2e2 !important; /* light red */
+  border-color: #fecaca !important;
 }
 
 [role='alert'][data-variant='destructive'] h1,
 [role='alert'][data-variant='destructive'] h2,
 [role='alert'][data-variant='destructive'] p {
-  color: hsl(var(--destructive-foreground)) !important;
+  color: #b91c1c !important; /* dark red */
 }
 
 .bg-card {
