@@ -90,6 +90,9 @@ export interface ResidentialAddOn {
   unitPrice: number;
   isFull: boolean;
   totalAvailableQuantity: number;
+  inventoryUsed?: number;
+  inventoryRemaining?: number;
+  isSoldOut?: boolean;
 }
 
 export interface ComplianceQuestion {
@@ -261,6 +264,29 @@ export interface CheckoutPayload {
   };
 }
 
+export interface WorkshopAddOnInventoryResponse {
+  status: string;
+  data: {
+    'Residential Add On': ResidentialAddOn[];
+    _meta?: {
+      capacity: {
+        hasCapacity: boolean;
+        remaining: number | null;
+        total: number | null;
+        current: number;
+      };
+    };
+  };
+  message: string;
+  meta: {
+    uptime: number;
+    timestamp: string;
+    environment: string;
+    responseTime: string;
+    isCachedResult: boolean;
+  };
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // API functions
@@ -385,6 +411,28 @@ export async function submitCheckout(
     throw new Error(responseData.message || 'Failed to process checkout');
   } catch (error) {
     console.error('Error submitting checkout:', error);
+    throw error;
+  }
+}
+
+export async function fetchWorkshopAddOnInventory(
+  workshopId: string
+): Promise<WorkshopAddOnInventoryResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/workshops/add-on-inventory/${workshopId}`
+    );
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      return data;
+    }
+
+    throw new Error(
+      data.message || 'Failed to fetch workshop add-on inventory'
+    );
+  } catch (error) {
+    console.error('Error fetching workshop add-on inventory:', error);
     throw error;
   }
 }

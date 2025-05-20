@@ -13,6 +13,7 @@ import {
   submitCheckout,
   type CourseData,
   type CheckoutPayload,
+  type WorkshopAddOnInventoryResponse,
 } from '@/lib/api';
 import { MainContent } from '@/components/checkout/MainContent';
 import { useCardElement } from '@/components/checkout/StripeCardWrapper';
@@ -34,6 +35,7 @@ const getCardState = () => {
 // Simplified component that uses context for card element
 interface CheckoutFormWithStripeProps {
   course: CourseData;
+  addOnInventory?: WorkshopAddOnInventoryResponse | null;
   showQuestionnaire: boolean;
   setShowQuestionnaire: (show: boolean) => void;
   questionnaireAnswers: Record<string, string>;
@@ -42,16 +44,19 @@ interface CheckoutFormWithStripeProps {
   >;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  disabled?: boolean;
 }
 
 export const CheckoutFormWithStripe = ({
   course,
+  addOnInventory,
   showQuestionnaire,
   setShowQuestionnaire,
   questionnaireAnswers,
   setQuestionnaireAnswers,
   loading,
   setLoading,
+  disabled = false,
 }: CheckoutFormWithStripeProps) => {
   const stripe = useStripe();
   const router = useRouter();
@@ -803,6 +808,8 @@ export const CheckoutFormWithStripe = ({
             loading={loading}
             course={course}
             setQuestionnaireAnswers={setQuestionnaireAnswers}
+            addOnInventory={addOnInventory}
+            disabled={disabled}
           />
         </Form>
       )}

@@ -3,11 +3,25 @@ import ErrorPage from 'next/error';
 import { FullScreenLoader } from '@/components/ui/loader';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe, Stripe } from '@stripe/stripe-js';
-import { fetchCourse, type CourseData } from '@/lib/api';
+import {
+  fetchCourse,
+  fetchWorkshopAddOnInventory,
+  type CourseData,
+  type WorkshopAddOnInventoryResponse,
+} from '@/lib/api';
 import { Toaster } from '@/components/ui/toaster';
 import { CheckoutFormWithStripe } from '@/components/checkout/CheckoutFormWithStripe';
 import type { GetServerSideProps } from 'next';
 import { GoogleReCaptchaProvider } from '@google-recaptcha/react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 // Log that Stripe will be initialized with the key from API
 console.log('Stripe will be initialized with key from API');
@@ -19,18 +33,31 @@ const RECAPTCHA_SITE_KEY =
     ? '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' // Google's test key
     : ''); // Empty string fallback (though this should never happen in production)
 
+// URL to redirect users if all options are sold out
+const ALL_COURSES_URL = 'https://members.us.artofliving.org/us-en/courses';
+
 const CheckoutPage = ({
   course: initialCourse,
   courseId,
+  addOnInventory: initialAddOnInventory,
 }: {
   course?: CourseData;
   courseId: string;
+  addOnInventory?: WorkshopAddOnInventoryResponse;
 }): JSX.Element => {
-  console.log('[CheckoutPage] Props:', { initialCourse, courseId });
+  console.log('[CheckoutPage] Props:', {
+    initialCourse,
+    courseId,
+    initialAddOnInventory,
+  });
 
   const [course, setCourse] = useState<CourseData | null>(
     initialCourse || null
   );
+  const [addOnInventory, setAddOnInventory] =
+    useState<WorkshopAddOnInventoryResponse | null>(
+      initialAddOnInventory || null
+    );
   const [loading, setLoading] = useState(!initialCourse);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState<
@@ -40,10 +67,38 @@ const CheckoutPage = ({
   const [stripePromise, setStripePromise] =
     useState<Promise<Stripe | null> | null>(null);
 
+  // New state for tracking if all options are sold out
+  const [showSoldOutDialog, setShowSoldOutDialog] = useState(false);
+  const [formDisabled, setFormDisabled] = useState(false);
+
   // Client-side only rendering
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Check if all residential options are sold out
+  useEffect(() => {
+    if (addOnInventory?.data?.['Residential Add On']) {
+      const options = addOnInventory.data['Residential Add On'];
+      const allSoldOut = options.every((option) => option.isSoldOut);
+
+      console.log(
+        '[CheckoutPage] Checking inventory: All sold out?',
+        allSoldOut
+      );
+
+      // Show dialog and disable form if all options are sold out
+      if (allSoldOut) {
+        setShowSoldOutDialog(true);
+        setFormDisabled(true);
+      }
+    }
+  }, [addOnInventory]);
+
+  // Handle navigation to all courses
+  const handleNavigateToAllCourses = () => {
+    window.location.href = ALL_COURSES_URL;
+  };
 
   // Initialize Stripe when course data is available
   useEffect(() => {
@@ -80,6 +135,25 @@ const CheckoutPage = ({
         const data = await fetchCourse(courseId);
         console.log('[CheckoutPage] Fetched course data:', data);
         setCourse(data);
+
+        // Fetch add-on inventory after course data is loaded
+        try {
+          console.log(
+            '[CheckoutPage] Fetching add-on inventory for:',
+            courseId
+          );
+          const inventoryData = await fetchWorkshopAddOnInventory(courseId);
+          console.log(
+            '[CheckoutPage] Fetched add-on inventory:',
+            inventoryData
+          );
+          setAddOnInventory(inventoryData);
+        } catch (inventoryError) {
+          console.error(
+            '[CheckoutPage] Failed to load add-on inventory:',
+            inventoryError
+          );
+        }
       } catch (error) {
         console.error('[CheckoutPage] Failed to load course:', error);
       } finally {
@@ -88,7 +162,7 @@ const CheckoutPage = ({
     };
 
     loadCourse();
-  }, [courseId, initialCourse]);
+  }, [courseId, initialCourse, initialAddOnInventory]);
 
   if (loading) {
     console.log('[CheckoutPage] Loading course details...');
@@ -108,6 +182,27 @@ const CheckoutPage = ({
   return (
     <GoogleReCaptchaProvider siteKey={RECAPTCHA_SITE_KEY} type="v3">
       <div>
+        {/* Sold Out Dialog */}
+        <Dialog open={showSoldOutDialog} onOpenChange={setShowSoldOutDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Course Fully Booked</DialogTitle>
+              <DialogDescription>
+                We&apos;re sorry, but all accommodation options for this course
+                are sold out. Would you like to explore other available courses?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-center mt-4">
+              <Button
+                onClick={handleNavigateToAllCourses}
+                className="bg-[#FF9361] hover:bg-[#FF7361]"
+              >
+                Browse Other Courses
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <Elements
           stripe={stripePromise}
           options={{
@@ -132,16 +227,17 @@ const CheckoutPage = ({
             loader: 'auto',
           }}
         >
-          <div className="">
-            {/* StripeCardWrapper is already inside the main content */}
+          <div className={formDisabled ? 'opacity-50 pointer-events-none' : ''}>
             <CheckoutFormWithStripe
               course={course}
+              addOnInventory={addOnInventory}
               showQuestionnaire={showQuestionnaire}
               setShowQuestionnaire={setShowQuestionnaire}
               questionnaireAnswers={questionnaireAnswers}
               setQuestionnaireAnswers={setQuestionnaireAnswers}
               loading={loading}
               setLoading={setLoading}
+              disabled={formDisabled}
             />
           </div>
         </Elements>
@@ -158,10 +254,27 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const course = await fetchCourse(courseId);
     console.log('[getServerSideProps] Fetched course:', course);
+
+    // Also fetch add-on inventory data during server-side rendering
+    let addOnInventory = null;
+    try {
+      addOnInventory = await fetchWorkshopAddOnInventory(courseId);
+      console.log(
+        '[getServerSideProps] Fetched add-on inventory:',
+        addOnInventory
+      );
+    } catch (inventoryError) {
+      console.error(
+        '[getServerSideProps] Failed to fetch add-on inventory:',
+        inventoryError
+      );
+    }
+
     return {
       props: {
         course,
         courseId,
+        addOnInventory,
       },
     };
   } catch (error) {

@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { US_STATES } from '@/components/checkout/constants';
-import type { CourseData } from '@/lib/api';
+import type { CourseData, WorkshopAddOnInventoryResponse } from '@/lib/api';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
@@ -69,9 +69,11 @@ interface MainContentProps {
       'Residential Add On': ResidentialAddOnProduct[];
     };
   };
+  addOnInventory?: WorkshopAddOnInventoryResponse | null;
   setQuestionnaireAnswers: React.Dispatch<
     React.SetStateAction<Record<string, string>>
   >;
+  disabled?: boolean;
 }
 
 // Helper function to format time
@@ -110,10 +112,26 @@ export const MainContent = ({
   onQuestionnaireSubmit: _onQuestionnaireSubmit,
   loading,
   course,
+  addOnInventory,
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   setQuestionnaireAnswers: _setQuestionnaireAnswers,
+  disabled = false,
 }: MainContentProps) => {
   const coursePrice = course.payment?.pricing?.price?.unitPrice || 0;
+
+  // Use add-on inventory data when available
+  React.useEffect(() => {
+    if (addOnInventory) {
+      console.log(
+        '[MainContent] Using workshop add-on inventory data:',
+        addOnInventory
+      );
+
+      // Here you could update component state based on the inventory data
+      // For example, you might want to filter out sold-out options or show inventory counts
+    }
+  }, [addOnInventory]);
+
   const selectedExpenseType = course.groupedAddOnProducts[
     'Residential Add On'
   ].find((product) => product.sfid === formik.values.expenseType);
@@ -508,18 +526,37 @@ export const MainContent = ({
                             <SelectValue placeholder="Select Expense Type" />
                           </SelectTrigger>
                           <SelectContent>
-                            {course.groupedAddOnProducts[
-                              'Residential Add On'
-                            ].map((option) => (
-                              <SelectItem
-                                key={option.sfid}
-                                value={option.sfid}
-                                disabled={option.isFull}
-                              >
-                                {option.name} - ${option.unitPrice}
-                                {option.isFull ? ' (FULL)' : ''}
-                              </SelectItem>
-                            ))}
+                            {addOnInventory?.data &&
+                            addOnInventory.data['Residential Add On']
+                              ? addOnInventory.data['Residential Add On'].map(
+                                  (option) => (
+                                    <SelectItem
+                                      key={option.sfid}
+                                      value={option.sfid}
+                                      disabled={option.isSoldOut}
+                                    >
+                                      {option.name} - ${option.unitPrice}
+                                      {option.isSoldOut
+                                        ? ' (SOLD OUT)'
+                                        : option.inventoryRemaining &&
+                                          option.inventoryRemaining < 10
+                                        ? ` (${option.inventoryRemaining} left)`
+                                        : ''}
+                                    </SelectItem>
+                                  )
+                                )
+                              : course.groupedAddOnProducts[
+                                  'Residential Add On'
+                                ].map((option) => (
+                                  <SelectItem
+                                    key={option.sfid}
+                                    value={option.sfid}
+                                    disabled={option.isFull}
+                                  >
+                                    {option.name} - ${option.unitPrice}
+                                    {option.isFull ? ' (FULL)' : ''}
+                                  </SelectItem>
+                                ))}
                           </SelectContent>
                         </Select>
                         <p className="text-sm text-gray-500 mt-1">
@@ -868,7 +905,7 @@ export const MainContent = ({
                       <Button
                         type="button"
                         className="submit-btn"
-                        disabled={loading}
+                        disabled={loading || disabled}
                         onClick={handleConfirmAndPay}
                       >
                         {loading ? (
@@ -876,6 +913,8 @@ export const MainContent = ({
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Processing...
                           </>
+                        ) : disabled ? (
+                          'Course Fully Booked'
                         ) : (
                           'Confirm and Pay'
                         )}
