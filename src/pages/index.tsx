@@ -1,17 +1,16 @@
 import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { FullScreenLoader } from '@/components/ui/loader';
 
 export default function Home() {
-  const router = useRouter();
-
   useEffect(() => {
-    // Redirect to the checkout page with default course ID
-    router.push('/checkout/sahaj-samadhi');
-  }, [router]);
+    // Redirect to the AOLF courses page
+    window.location.href = 'https://members.us.artofliving.org/us-en/courses';
+  }, []);
 
   return (
     <div className="container mx-auto p-8 flex items-center justify-center min-h-screen">
-      <p className="text-center text-lg">Redirecting to checkout...</p>
+      <FullScreenLoader />
+      <p className="text-center text-lg">Redirecting to courses...</p>
     </div>
   );
 }
