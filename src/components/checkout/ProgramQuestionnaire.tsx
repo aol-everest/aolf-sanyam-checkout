@@ -215,7 +215,8 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                               checked={values[question.sfid] === 'Yes'}
                               onChange={() => {
                                 setFieldValue(question.sfid, 'Yes');
-                                setFieldTouched(question.sfid, true, true);
+                                // Don't validate on change, just set the value
+                                // This prevents validation errors from showing when the user makes a selection
                               }}
                               className="h-4 w-4 border-gray-300 text-[#FF9361] focus:ring-[#FF9361]"
                             />
@@ -235,7 +236,8 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                               checked={values[question.sfid] === 'No'}
                               onChange={() => {
                                 setFieldValue(question.sfid, 'No');
-                                setFieldTouched(question.sfid, true, true);
+                                // Don't validate on change, just set the value
+                                // This prevents validation errors from showing when the user makes a selection
                               }}
                               className="h-4 w-4 border-gray-300 text-[#FF9361] focus:ring-[#FF9361]"
                             />
@@ -309,12 +311,18 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                           </Select>
                         )}
 
-                      {/* Show validation errors */}
-                      {touched[question.sfid] && errors[question.sfid] && (
-                        <div className="text-sm text-red-500">
-                          {errors[question.sfid] as string}
-                        </div>
-                      )}
+                      {/* Show validation errors only if field is touched and not selected */}
+                      {touched[question.sfid] &&
+                        errors[question.sfid] &&
+                        !(
+                          question.questionType === 'Yes/No' &&
+                          (values[question.sfid] === 'Yes' ||
+                            values[question.sfid] === 'No')
+                        ) && (
+                          <div className="text-sm text-red-500">
+                            {errors[question.sfid] as string}
+                          </div>
+                        )}
                     </FormItem>
                   </div>
                 ))}

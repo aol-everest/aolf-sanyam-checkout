@@ -374,27 +374,17 @@ export const CheckoutFormWithStripe = ({
 
       // Touch all compliance answer fields specifically
       if (values.complianceAnswers) {
-        console.log(
-          'Setting all compliance fields as touched:',
-          Object.keys(values.complianceAnswers)
-        );
         Object.keys(values.complianceAnswers).forEach((key) => {
           const fieldPath = `complianceAnswers.${key}`;
           formikRef.current?.setFieldTouched(fieldPath, true, false);
-          console.log(`Set ${fieldPath} as touched`);
         });
       }
 
       // Touch all program questionnaire fields
       if (values.programQuestionnaire) {
-        console.log(
-          'Setting all program questionnaire fields as touched:',
-          Object.keys(values.programQuestionnaire)
-        );
         Object.keys(values.programQuestionnaire).forEach((key) => {
           const fieldPath = `programQuestionnaire.${key}`;
           formikRef.current?.setFieldTouched(fieldPath, true, false);
-          console.log(`Set ${fieldPath} as touched`);
         });
       }
 
@@ -402,12 +392,6 @@ export const CheckoutFormWithStripe = ({
       formikRef.current
         .validateForm()
         .then((errors: Record<string, unknown>) => {
-          console.log('Formik errors:', errors);
-          console.log(
-            'Program questionnaire values:',
-            values.programQuestionnaire
-          );
-
           // Skip validation for programQuestionnaire as it's handled separately
           // in the ProgramQuestionnaire component
           if (errors.programQuestionnaire) {
@@ -429,10 +413,6 @@ export const CheckoutFormWithStripe = ({
             errors.complianceAnswers &&
             typeof errors.complianceAnswers === 'object'
           ) {
-            console.log(
-              'Processing compliance errors:',
-              errors.complianceAnswers
-            );
             Object.entries(errors.complianceAnswers).forEach(
               ([field, message]) => {
                 if (typeof message === 'string') {
@@ -447,7 +427,6 @@ export const CheckoutFormWithStripe = ({
                     : `Compliance ${field}`;
 
                   const errorMessage = `${questionLabel}: ${message}`;
-                  console.log(`Adding compliance error: ${errorMessage}`);
                   errorMessages.push(errorMessage);
                 }
               }
