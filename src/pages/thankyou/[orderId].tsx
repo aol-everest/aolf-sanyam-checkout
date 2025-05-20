@@ -13,16 +13,14 @@ export default function ThankYouPage() {
                   <h3 className="get-started__subtitle">You're going!</h3>
                   <h1 className="get-started__title section-title">Sanyam 2</h1>
                   <p className="get-started__text">
-                    You're registered for Art of Living Course, from Fri, May
-                    16, 2025 - Thank you for registering! Your spot for the
-                    Sanyam 2 Course starting Friday, July 11, 2025, is
-                    confirmed. We’ll notify you soon with everything you need to
-                    know.
+                    Thank you for registering! Your spot for the Sanyam 2 Course
+                    starting Friday, July 11, 2025, is confirmed. We’ll notify
+                    you soon with everything you need to know.
                   </p>
                 </div>
                 <p className="get-started__text">
                   <br />
-                  To get started, download the app.
+                  Download the journey app.
                 </p>
                 <div className="btn-wrapper">
                   <a
