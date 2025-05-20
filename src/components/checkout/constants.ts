@@ -54,4 +54,5 @@ export const US_STATES: USState[] = [
   { value: 'WV', label: 'West Virginia' },
   { value: 'WI', label: 'Wisconsin' },
   { value: 'WY', label: 'Wyoming' },
+  { value: 'Other', label: 'Other' },
 ];

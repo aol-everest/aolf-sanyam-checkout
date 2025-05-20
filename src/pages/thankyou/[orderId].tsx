@@ -11,9 +11,7 @@ export default function ThankYouPage() {
               <div className="col-lg-5 col-md-12 p-md-0">
                 <div className="get-started__info">
                   <h3 className="get-started__subtitle">You're going!</h3>
-                  <h1 className="get-started__title section-title">
-                    Art of Living Course - Sanyam 2
-                  </h1>
+                  <h1 className="get-started__title section-title">Sanyam 2</h1>
                   <p className="get-started__text">
                     You're registered for Art of Living Course, from Fri, May
                     16, 2025 - Thank you for registering! Your spot for the

@@ -69,10 +69,6 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
             schemaShape[question.sfid] = Yup.string()
               .required('This question is required')
               .test('yes-no-test', 'Please select Yes or No', (value) => {
-                console.log(`Validating Yes/No question ${question.sfid}:`, {
-                  value,
-                  isValid: value === 'Yes' || value === 'No',
-                });
                 return value === 'Yes' || value === 'No';
               });
           } else if (question.questionType === 'Text') {
@@ -81,10 +77,6 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
               .trim()
               .required('This question is required')
               .test('text-test', 'This question is required', (value) => {
-                console.log(`Validating Text question ${question.sfid}:`, {
-                  value,
-                  isValid: !!value && value.trim() !== '',
-                });
                 return !!value && value.trim() !== '';
               });
           } else if (question.questionType === 'Picklist') {
@@ -93,10 +85,6 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
               .trim()
               .required('This question is required')
               .test('picklist-test', 'Please select an option', (value) => {
-                console.log(`Validating Picklist question ${question.sfid}:`, {
-                  value,
-                  isValid: !!value && value.trim() !== '',
-                });
                 return !!value && value.trim() !== '';
               });
           } else {
@@ -226,9 +214,6 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                               value="Yes"
                               checked={values[question.sfid] === 'Yes'}
                               onChange={() => {
-                                console.log(
-                                  `Setting ${question.sfid} to "Yes"`
-                                );
                                 setFieldValue(question.sfid, 'Yes');
                                 setFieldTouched(question.sfid, true, true);
                               }}
@@ -249,7 +234,6 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                               value="No"
                               checked={values[question.sfid] === 'No'}
                               onChange={() => {
-                                console.log(`Setting ${question.sfid} to "No"`);
                                 setFieldValue(question.sfid, 'No');
                                 setFieldTouched(question.sfid, true, true);
                               }}
@@ -292,9 +276,6 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
                           <Select
                             value={values[question.sfid] || ''}
                             onValueChange={(value) => {
-                              console.log(
-                                `Setting ${question.sfid} picklist to "${value}"`
-                              );
                               setFieldValue(question.sfid, value);
                               setFieldTouched(question.sfid, true, true);
                               // Force validation to run immediately after selection

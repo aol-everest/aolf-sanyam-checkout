@@ -27,8 +27,6 @@ export interface FormikFormValues {
   agreeTerms: boolean;
   complianceAnswers: Record<string, boolean>;
   programQuestionnaire?: Record<string, string>;
-  recaptchaToken?: string;
-  recaptchaAction?: string;
 }
 
 export const formikValidationSchema = Yup.object().shape({
@@ -181,26 +179,14 @@ export const FormMessage: React.FC<{
       {({ form }: FormFieldProps) => {
         let error = null;
 
-        console.log(`FormMessage for ${name}${innerKey ? '.' + innerKey : ''}`);
-
         // For direct field errors (non-nested)
         if (!innerKey) {
           error = form.touched[name] && form.errors[name];
-          console.log(
-            `Direct field check: touched=${!!form.touched[name]}, error=${
-              form.errors[name]
-            }`
-          );
         } else {
           // For nested objects (like programQuestionnaire.sfid or complianceAnswers.sfid)
           const touchedField = form.touched[name];
           const valueField = form.values[name];
           const errorField = form.errors[name];
-
-          console.log(`Nested field check for ${name}.${innerKey}:`);
-          console.log('- touchedField:', touchedField);
-          console.log('- valueField:', valueField);
-          console.log('- errorField:', errorField);
 
           // Check if the field and error exist and are objects
           if (
@@ -219,11 +205,6 @@ export const FormMessage: React.FC<{
                 ? valueField[innerKey]
                 : undefined;
 
-            console.log(
-              `- hasError: ${hasError}, isTouched: ${isTouched}, fieldValue:`,
-              fieldValue
-            );
-
             if (hasError && isTouched) {
               // For complianceAnswers (boolean fields)
               if (
@@ -233,9 +214,6 @@ export const FormMessage: React.FC<{
               ) {
                 // Don't show error if the checkbox is checked
                 error = null;
-                console.log(
-                  `- Suppressing compliance error because value is true`
-                );
               }
               // For programQuestionnaire (string fields)
               else if (
@@ -245,24 +223,13 @@ export const FormMessage: React.FC<{
               ) {
                 // Don't show error if the field has a value
                 error = null;
-                console.log(
-                  `- Suppressing program questionnaire error because field has value: ${fieldValue}`
-                );
               } else {
                 // Show the error
                 error = hasError;
-                console.log(`- Showing error: ${hasError}`);
               }
             }
           }
         }
-
-        // Final decision
-        console.log(
-          `FormMessage result: ${
-            !!error ? 'Showing error' : 'No error to show'
-          }`
-        );
 
         if (!error) return null;
         return (

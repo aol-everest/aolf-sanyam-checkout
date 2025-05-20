@@ -333,68 +333,22 @@ export async function fetchOrder(orderId: string): Promise<OrderData> {
 
 export async function submitCheckout(
   workshopId: string,
-  data: CheckoutPayload,
-  recaptcha?: { token: string; action: string }
-): Promise<{ orderId: string }> {
+  data: CheckoutPayload
+): Promise<{ orderId: string; clientSecret?: string }> {
   try {
-    // Use recaptcha from params instead of extracting from data
-    const recaptchaToken = recaptcha?.token || '';
-    const recaptchaAction = recaptcha?.action || '';
-
-    // Log token details for debugging
-    console.log('API submitCheckout reCAPTCHA:', {
-      tokenLength: recaptchaToken?.length || 0,
-      action: recaptchaAction,
-      isDev: process.env.NODE_ENV === 'development',
-    });
-
-    // STRICT CHECK: Don't proceed if no recaptcha token is provided
-    if (!recaptchaToken) {
-      console.error('No reCAPTCHA token provided');
-
-      // In development mode, we'll allow requests without tokens
-      if (process.env.NODE_ENV !== 'development') {
-        throw new Error(
-          'Security verification required. Please enable reCAPTCHA and try again.'
-        );
-      } else {
-        console.warn('Development mode: Proceeding without reCAPTCHA token');
-      }
-    }
-
-    // Validate recaptcha token format before proceeding
-    // A valid token is usually over 20 characters (reduced from 50 for more leniency)
-    else if (recaptchaToken.length < 20) {
-      console.error('Invalid reCAPTCHA token format:', {
-        tokenLength: recaptchaToken.length,
-      });
-
-      // If not in development, strictly enforce reCAPTCHA
-      if (process.env.NODE_ENV !== 'development') {
-        throw new Error('Security verification failed. Please try again.');
-      } else {
-        // In development, log a warning but allow the request to proceed
-        console.warn(
-          'Development mode: Proceeding despite invalid reCAPTCHA token'
-        );
-      }
-    }
-
-    // Create headers with reCAPTCHA token
+    // Create headers
     const headers = {
       'Content-Type': 'application/json',
-      'X-Recaptcha-Token': recaptchaToken,
-      'X-Recaptcha-Action': recaptchaAction,
     };
 
-    const response = await fetch(
-      `${API_BASE_URL}/checkout/workshops/async/${workshopId}`,
-      {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(data),
-      }
-    );
+    // If using PaymentIntent, update endpoint
+    const endpoint = `${API_BASE_URL}/checkout/workshops/async/${workshopId}`;
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -403,9 +357,20 @@ export async function submitCheckout(
 
     const responseData = await response.json();
 
-    // Extract orderId from the success response structure
-    if (responseData.status === 'success' && responseData.data?.orderId) {
-      return { orderId: responseData.data.orderId };
+    if (responseData.status === 'success') {
+      // Check if we have paymentIntent in the response
+      if (responseData.data.paymentIntent?.client_secret) {
+        return {
+          orderId: responseData.data.orderId,
+          clientSecret: responseData.data.paymentIntent.client_secret,
+        };
+      } else {
+        // Fallback for legacy response format
+        return {
+          orderId: responseData.data.orderId,
+          clientSecret: responseData.data.clientSecret,
+        };
+      }
     }
 
     throw new Error(responseData.message || 'Failed to process checkout');

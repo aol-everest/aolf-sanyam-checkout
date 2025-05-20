@@ -12,7 +12,7 @@ import {
 import { Toaster } from '@/components/ui/toaster';
 import { CheckoutFormWithStripe } from '@/components/checkout/CheckoutFormWithStripe';
 import type { GetServerSideProps } from 'next';
-import { GoogleReCaptchaProvider } from '@google-recaptcha/react';
+
 import {
   Dialog,
   DialogContent,
@@ -25,13 +25,6 @@ import { Button } from '@/components/ui/button';
 
 // Log that Stripe will be initialized with the key from API
 console.log('Stripe will be initialized with key from API');
-
-// reCAPTCHA site key - replace with your actual site key
-const RECAPTCHA_SITE_KEY =
-  process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ||
-  (process.env.NODE_ENV === 'development'
-    ? '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' // Google's test key
-    : ''); // Empty string fallback (though this should never happen in production)
 
 // URL to redirect users if all options are sold out
 const ALL_COURSES_URL = 'https://members.us.artofliving.org/us-en/courses';
@@ -180,70 +173,72 @@ const CheckoutPage = ({
 
   console.log('[CheckoutPage] Rendering checkout form with Stripe');
   return (
-    <GoogleReCaptchaProvider siteKey={RECAPTCHA_SITE_KEY} type="v3">
-      <div>
-        {/* Sold Out Dialog */}
-        <Dialog open={showSoldOutDialog} onOpenChange={setShowSoldOutDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Course Fully Booked</DialogTitle>
-              <DialogDescription>
-                We&apos;re sorry, but all accommodation options for this course
-                are sold out. Would you like to explore other available courses?
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="sm:justify-center mt-4">
-              <Button
-                onClick={handleNavigateToAllCourses}
-                className="bg-[#FF9361] hover:bg-[#FF7361]"
-              >
-                Browse Other Courses
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+    <div>
+      {/* Sold Out Dialog */}
+      <Dialog open={showSoldOutDialog} onOpenChange={setShowSoldOutDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Course Fully Booked</DialogTitle>
+            <DialogDescription>
+              We&apos;re sorry, but all accommodation options for this course
+              are sold out. Would you like to explore other available courses?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center mt-4">
+            <Button
+              onClick={handleNavigateToAllCourses}
+              className="bg-[#FF9361] hover:bg-[#FF7361]"
+            >
+              Browse Other Courses
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        <Elements
-          stripe={stripePromise}
-          options={{
-            fonts: [
-              {
-                cssSrc:
-                  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
-              },
-            ],
-            appearance: {
-              theme: 'stripe',
-              variables: {
-                colorPrimary: '#FF9361',
-                colorBackground: '#ffffff',
-                colorText: '#424770',
-                colorDanger: '#9e2146',
-                fontFamily: 'Inter, system-ui, sans-serif',
-                spacingUnit: '4px',
-                borderRadius: '4px',
-              },
+      <Elements
+        stripe={stripePromise}
+        options={{
+          mode: 'payment',
+          amount: course?.payment?.pricing?.price?.unitPrice
+            ? Math.round(course.payment.pricing.price.unitPrice * 100)
+            : undefined,
+          currency: 'usd',
+          paymentMethodCreation: 'manual',
+          fonts: [
+            {
+              cssSrc:
+                'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
             },
-            loader: 'auto',
-          }}
-        >
-          <div className={formDisabled ? 'opacity-50 pointer-events-none' : ''}>
-            <CheckoutFormWithStripe
-              course={course}
-              addOnInventory={addOnInventory}
-              showQuestionnaire={showQuestionnaire}
-              setShowQuestionnaire={setShowQuestionnaire}
-              questionnaireAnswers={questionnaireAnswers}
-              setQuestionnaireAnswers={setQuestionnaireAnswers}
-              loading={loading}
-              setLoading={setLoading}
-              disabled={formDisabled}
-            />
-          </div>
-        </Elements>
-        <Toaster />
-      </div>
-    </GoogleReCaptchaProvider>
+          ],
+          appearance: {
+            theme: 'stripe',
+            variables: {
+              colorPrimary: '#FF9361',
+              colorBackground: '#ffffff',
+              colorText: '#424770',
+              colorDanger: '#9e2146',
+              fontFamily: 'Inter, system-ui, sans-serif',
+              spacingUnit: '4px',
+              borderRadius: '4px',
+            },
+          },
+          loader: 'auto',
+        }}
+      >
+        <div className={formDisabled ? 'opacity-50 pointer-events-none' : ''}>
+          <CheckoutFormWithStripe
+            course={course}
+            addOnInventory={addOnInventory}
+            showQuestionnaire={showQuestionnaire}
+            setShowQuestionnaire={setShowQuestionnaire}
+            questionnaireAnswers={questionnaireAnswers}
+            setQuestionnaireAnswers={setQuestionnaireAnswers}
+            disabled={formDisabled}
+          />
+        </div>
+      </Elements>
+      <Toaster />
+    </div>
   );
 };
 

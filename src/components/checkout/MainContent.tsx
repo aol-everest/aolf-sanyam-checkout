@@ -23,8 +23,8 @@ import { Loader2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { Checkbox } from '@/components/ui/checkbox';
-// Import the StripeCardWrapper for when we need to reference it
-import { StripeCardWrapper } from '@/components/checkout/StripeCardWrapper';
+// Import the StripePaymentWrapper for the payment form
+import { StripePaymentWrapper } from '@/components/checkout/StripePaymentWrapper';
 import { ProgramQuestionnaire } from '@/components/checkout/ProgramQuestionnaire';
 
 interface ResidentialAddOnProduct {
@@ -450,7 +450,7 @@ export const MainContent = ({
                       )}
                   </div>
                   <div className="card-detail-wrapper">
-                    <StripeCardWrapper />
+                    <StripePaymentWrapper />
                   </div>
                 </div>
               </div>
