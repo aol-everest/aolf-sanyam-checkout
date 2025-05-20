@@ -32,9 +32,25 @@ export interface FormikFormValues {
 }
 
 export const formikValidationSchema = Yup.object().shape({
-  firstName: Yup.string().required('First name is required'),
-  lastName: Yup.string().required('Last name is required'),
-  email: Yup.string().email('Invalid email').required('Email is required'),
+  firstName: Yup.string()
+    .trim()
+    .required('First name is required')
+    .test('not-only-spaces', 'First name is required', (value) =>
+      value ? value.trim().length > 0 : false
+    ),
+  lastName: Yup.string()
+    .trim()
+    .required('Last name is required')
+    .test('not-only-spaces', 'Last name is required', (value) =>
+      value ? value.trim().length > 0 : false
+    ),
+  email: Yup.string()
+    .trim()
+    .email('Invalid email')
+    .required('Email is required')
+    .test('not-only-spaces', 'Email is required', (value) =>
+      value ? value.trim().length > 0 : false
+    ),
   phone: Yup.string()
     .required('Phone number is required')
     .matches(
@@ -51,10 +67,30 @@ export const formikValidationSchema = Yup.object().shape({
         return digitCount >= 10;
       }
     ),
-  address: Yup.string().required('Address is required'),
-  city: Yup.string().required('City is required'),
-  state: Yup.string().required('State is required'),
-  zip: Yup.string().required('ZIP code is required'),
+  address: Yup.string()
+    .trim()
+    .required('Address is required')
+    .test('not-only-spaces', 'Address is required', (value) =>
+      value ? value.trim().length > 0 : false
+    ),
+  city: Yup.string()
+    .trim()
+    .required('City is required')
+    .test('not-only-spaces', 'City is required', (value) =>
+      value ? value.trim().length > 0 : false
+    ),
+  state: Yup.string()
+    .trim()
+    .required('State is required')
+    .test('not-only-spaces', 'State is required', (value) =>
+      value ? value.trim().length > 0 : false
+    ),
+  zip: Yup.string()
+    .trim()
+    .required('ZIP code is required')
+    .test('not-only-spaces', 'ZIP code is required', (value) =>
+      value ? value.trim().length > 0 : false
+    ),
   expenseType: Yup.string().required('Expense type is required'),
   agreeTerms: Yup.boolean().oneOf(
     [true],

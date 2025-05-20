@@ -78,6 +78,7 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
           } else if (question.questionType === 'Text') {
             // Text questions just need to be non-empty
             schemaShape[question.sfid] = Yup.string()
+              .trim()
               .required('This question is required')
               .test('text-test', 'This question is required', (value) => {
                 console.log(`Validating Text question ${question.sfid}:`, {
@@ -89,6 +90,7 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
           } else if (question.questionType === 'Picklist') {
             // Picklist questions must have a selected value
             schemaShape[question.sfid] = Yup.string()
+              .trim()
               .required('This question is required')
               .test('picklist-test', 'Please select an option', (value) => {
                 console.log(`Validating Picklist question ${question.sfid}:`, {
@@ -99,9 +101,12 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
               });
           } else {
             // Default validation for other types
-            schemaShape[question.sfid] = Yup.string().required(
-              'This question is required'
-            );
+            schemaShape[question.sfid] = Yup.string()
+              .trim()
+              .required('This question is required')
+              .test('not-only-spaces', 'This question is required', (value) => {
+                return !!value && value.trim() !== '';
+              });
           }
         }
       });
@@ -138,11 +143,21 @@ export const ProgramQuestionnaire: React.FC<ProgramQuestionnaireProps> = ({
     console.log('ProgramQuestionnaire form submitted with values:', values);
     console.log('Validation status:', validationSchema.isValidSync(values));
 
+    // Trim all string values before submitting
+    const trimmedValues: QuestionnaireFormValues = {};
+    Object.keys(values).forEach((key) => {
+      if (typeof values[key] === 'string') {
+        trimmedValues[key] = values[key].trim();
+      } else {
+        trimmedValues[key] = values[key];
+      }
+    });
+
     setIsSubmitting(true);
 
     if (onSubmit) {
-      console.log('Calling onSubmit with questionnaire values');
-      onSubmit(values);
+      console.log('Calling onSubmit with trimmed questionnaire values');
+      onSubmit(trimmedValues);
     } else {
       console.warn('No onSubmit handler provided to ProgramQuestionnaire');
     }

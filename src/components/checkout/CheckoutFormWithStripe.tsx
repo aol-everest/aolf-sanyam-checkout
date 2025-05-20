@@ -71,6 +71,18 @@ export const CheckoutFormWithStripe = ({
       return;
     }
 
+    // Trim all string values in the form data
+    const trimmedValues = { ...values };
+    Object.keys(trimmedValues).forEach((key) => {
+      const value = trimmedValues[key as keyof FormikFormValues];
+      if (typeof value === 'string') {
+        (trimmedValues as Record<string, unknown>)[key] = value.trim();
+      }
+    });
+
+    // Use trimmedValues instead of original values
+    values = trimmedValues as FormikFormValues;
+
     if (!stripe) {
       toast({
         variant: 'destructive',
@@ -401,6 +413,18 @@ export const CheckoutFormWithStripe = ({
 
   // Handle form submission
   const handleSubmit = (values: FormikFormValues) => {
+    // Trim all string values in the form data
+    const trimmedValues = { ...values };
+    Object.keys(trimmedValues).forEach((key) => {
+      const value = trimmedValues[key as keyof FormikFormValues];
+      if (typeof value === 'string') {
+        (trimmedValues as Record<string, unknown>)[key] = value.trim();
+      }
+    });
+
+    // Use trimmedValues instead of original values
+    values = trimmedValues as FormikFormValues;
+
     // Make sure the form has a reCAPTCHA token
     if (!values.recaptchaToken && executeV3) {
       // If there's no token in the form but we have the reCAPTCHA API available,
@@ -446,28 +470,33 @@ export const CheckoutFormWithStripe = ({
 
   // Manual trigger for button click
   const handleManualSubmit = async () => {
-    console.log('Manual form submission requested');
-
-    // Verify with reCAPTCHA first on manual submit
-    if (!executeV3) {
-      // Mandatory reCAPTCHA check - don't allow submission without reCAPTCHA
-      console.error('reCAPTCHA verification not available');
-
-      // In development, allow proceeding without reCAPTCHA
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          'Development mode: Proceeding without reCAPTCHA for manual submit'
-        );
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Security Verification Required',
-          description:
-            'This site requires security verification to process your checkout. Please enable reCAPTCHA and try again.',
-        });
-        return;
-      }
+    // Get current form values from Formik
+    if (!formikRef.current) {
+      console.error('Formik ref is not available');
+      return;
     }
+
+    // Get values and touch all fields
+    const values = formikRef.current.values;
+
+    // Trim all string values in the form data
+    const trimmedValues = { ...values };
+    Object.keys(trimmedValues).forEach((key) => {
+      const value = trimmedValues[key as keyof FormikFormValues];
+      if (typeof value === 'string') {
+        (trimmedValues as Record<string, unknown>)[key] = value.trim();
+      }
+    });
+
+    // Update form values with trimmed values
+    Object.keys(trimmedValues).forEach((key) => {
+      if (typeof trimmedValues[key as keyof FormikFormValues] === 'string') {
+        formikRef.current?.setFieldValue(
+          key,
+          (trimmedValues as Record<string, unknown>)[key]
+        );
+      }
+    });
 
     let recaptchaToken = '';
 
