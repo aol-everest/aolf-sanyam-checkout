@@ -293,7 +293,7 @@ export async function fetchOrder(orderId: string): Promise<OrderData> {
     // Fallback to mock data for demo/development
     return {
       orderId: orderId || 'order123',
-      courseTitle: 'Art of Living Course', // Generic title
+      courseTitle: 'Art of Living Course - Sanyam 2', // Generic title
       amount: 75,
       purchasedAt: new Date().toISOString(),
       userEmail: 'test.auth@aolvecloud9.ai',

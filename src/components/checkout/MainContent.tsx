@@ -739,7 +739,9 @@ export const MainContent = ({
                         </div>
                         <div className="value col-7">
                           <a
-                            href={course.location.center?.centerUrl}
+                            href="https://www.google.com/maps/search/?api=1&amp;query=949 Whispering Hills Road, Boone NC 28607 US"
+                            target="_blank"
+                            rel="noreferrer"
                             className="text-[#FF9361]"
                           >
                             {course.location.street}, {course.location.city},{' '}

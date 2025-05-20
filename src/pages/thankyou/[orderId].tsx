@@ -1,66 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { fetchOrder, type OrderData } from '@/lib/api';
 
-export async function getServerSideProps({
-  params,
-}: {
-  params: { orderId: string };
-}) {
-  try {
-    const order = await fetchOrder(params.orderId);
-    return {
-      props: {
-        order,
-        orderId: params.orderId,
-      },
-    };
-  } catch (error) {
-    console.error('Error fetching order in getServerSideProps:', error);
-    return {
-      props: {
-        orderId: params.orderId,
-      },
-    };
-  }
-}
-
-export default function ThankYouPage({
-  order: initialOrder,
-  orderId,
-}: {
-  order?: OrderData;
-  orderId: string;
-}) {
-  const [order, setOrder] = useState<OrderData | null>(initialOrder || null);
-  const [loading, setLoading] = useState(!initialOrder);
-
-  useEffect(() => {
-    if (initialOrder) return;
-
-    const loadOrder = async () => {
-      try {
-        const data = await fetchOrder(orderId);
-        setOrder(data);
-      } catch (error) {
-        console.error('Failed to load order', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadOrder();
-  }, [orderId, initialOrder]);
-
-  if (loading) {
-    return <div className="container py-12 text-center">Loading...</div>;
-  }
-
-  if (!order) {
-    return <div className="container py-12 text-center">Order not found</div>;
-  }
-
+export default function ThankYouPage() {
   return (
     <>
       <main>
@@ -71,19 +12,14 @@ export default function ThankYouPage({
                 <div className="get-started__info">
                   <h3 className="get-started__subtitle">You're going!</h3>
                   <h1 className="get-started__title section-title">
-                    {order.courseTitle}
+                    Art of Living Course - Sanyam 2
                   </h1>
                   <p className="get-started__text">
-                    You&apos;re registered for {order.courseTitle}, from Fri,{' '}
-                    {order.courseDate}
-                  </p>
-                  <a className="get-started__link" href="#">
-                    Add to Calendar
-                  </a>
-                  <p className="get-started__text">
-                    <br />
-                    Next step: You will receive an email with details about your
-                    Sanyam- 2.
+                    You're registered for Art of Living Course, from Fri, May
+                    16, 2025 - Thank you for registering! Your spot for the
+                    Sanyam 2 Course starting Friday, July 11, 2025, is
+                    confirmed. We’ll notify you soon with everything you need to
+                    know.
                   </p>
                 </div>
                 <p className="get-started__text">
@@ -143,10 +79,15 @@ export default function ThankYouPage({
               <ul className="program-details__list-schedule tw-max-h-[400px] tw-overflow-y-auto mb-2">
                 <li className="program-details__schedule tw-flex">
                   <span className="program-details__schedule-date">
-                    {order.courseDate}
+                    July 11, 2025
                   </span>
                   <span className="program-details__schedule-time tw-ml-2">
-                    {order.courseTime}
+                    Fri: 7:00AM-9:00PM EST <br />
+                    Sat: 7:00AM-9:00PM EST <br />
+                    Sun: 7:00AM-9:00PM EST <br />
+                    Mon: 7:00AM-9:00PM EST <br />
+                    Tue: 7:00AM-9:00PM EST <br />
+                    Wed: 7:00AM-9:00PM EST
                   </span>
                 </li>
               </ul>
