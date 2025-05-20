@@ -536,12 +536,7 @@ export const MainContent = ({
                                       disabled={option.isSoldOut}
                                     >
                                       {option.name} - ${option.unitPrice}
-                                      {option.isSoldOut
-                                        ? ' (SOLD OUT)'
-                                        : option.inventoryRemaining &&
-                                          option.inventoryRemaining < 10
-                                        ? ` (${option.inventoryRemaining} left)`
-                                        : ''}
+                                      {option.isSoldOut ? ' (SOLD OUT)' : ''}
                                     </SelectItem>
                                   )
                                 )
