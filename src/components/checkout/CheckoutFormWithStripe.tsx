@@ -332,7 +332,7 @@ export const CheckoutFormWithStripe = ({
     }
 
     // Verify reCAPTCHA before form submission
-    const recaptchaAction = 'checkout_form_submit';
+    const recaptchaAction = 'checkout';
     const recaptchaResult = await getRecaptchaToken(recaptchaAction);
 
     if (!recaptchaResult.token) {
