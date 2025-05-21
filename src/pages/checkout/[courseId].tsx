@@ -68,13 +68,25 @@ const CheckoutPage = ({
   const [showSoldOutDialog, setShowSoldOutDialog] = useState(false);
   const [formDisabled, setFormDisabled] = useState(false);
 
+  // State to track if the course is full (vs just add-ons sold out)
+  const [isCourseFull, setIsCourseFull] = useState(false);
+
   // Client-side only rendering
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Check if all residential options are sold out
+  // Check if all residential options are sold out or course is full
   useEffect(() => {
+    // Check if course has no capacity
+    if (addOnInventory?.data?._meta?.capacity?.hasCapacity === false) {
+      console.log('[CheckoutPage] Course is full, no capacity available');
+      setShowSoldOutDialog(true);
+      setFormDisabled(true);
+      return;
+    }
+
+    // Check if all add-on options are sold out
     if (addOnInventory?.data?.['Residential Add On']) {
       const options = addOnInventory.data['Residential Add On'];
       const allSoldOut = options.every((option) => option.isSoldOut);
@@ -90,6 +102,13 @@ const CheckoutPage = ({
         setFormDisabled(true);
       }
     }
+  }, [addOnInventory]);
+
+  // Update isCourseFull state when inventory changes
+  useEffect(() => {
+    setIsCourseFull(
+      addOnInventory?.data?._meta?.capacity?.hasCapacity === false
+    );
   }, [addOnInventory]);
 
   // Handle navigation to all courses
@@ -230,10 +249,13 @@ const CheckoutPage = ({
         <Dialog open={showSoldOutDialog} onOpenChange={setShowSoldOutDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Course Fully Booked</DialogTitle>
+              <DialogTitle>
+                {isCourseFull ? 'Course Full' : 'Accommodation Unavailable'}
+              </DialogTitle>
               <DialogDescription>
-                We&apos;re sorry, but all accommodation options for this course
-                are sold out. Would you like to explore other available courses?
+                {isCourseFull
+                  ? 'We&apos;re sorry, but this course has reached full capacity and is no longer available for registration. Would you like to explore other available courses?'
+                  : 'We&apos;re sorry, but all accommodation options for this course are sold out. Would you like to explore other available courses?'}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="sm:justify-center mt-4">
