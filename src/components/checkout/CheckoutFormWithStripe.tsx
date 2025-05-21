@@ -480,9 +480,10 @@ export const CheckoutFormWithStripe = ({
           const errorMessages: string[] = [];
 
           // Process top-level errors
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           Object.entries(errors).forEach(([field, message]) => {
             if (typeof message === 'string') {
-              errorMessages.push(`${field}: ${message}`);
+              errorMessages.push(`${message}`);
             }
           });
 
