@@ -44,8 +44,11 @@ export const formikValidationSchema = Yup.object().shape({
     ),
   email: Yup.string()
     .trim()
-    .email('Invalid email')
     .required('Email is required')
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      'Invalid email format. Please enter a valid email address'
+    )
     .test('not-only-spaces', 'Email is required', (value) =>
       value ? value.trim().length > 0 : false
     ),
