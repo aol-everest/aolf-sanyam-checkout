@@ -187,7 +187,7 @@ export const CheckoutFormWithStripe = ({
       };
 
       // Get reCAPTCHA token
-      const recaptchaAction = 'checkout_submit';
+      const recaptchaAction = 'checkout';
       const recaptchaResult = await getRecaptchaToken(recaptchaAction);
 
       if (!recaptchaResult.token) {
