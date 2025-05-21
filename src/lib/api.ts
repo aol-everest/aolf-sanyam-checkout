@@ -78,11 +78,11 @@ export interface CoursePayment {
 export interface ResidentialAddOn {
   sfid: string;
   name: string;
-  productGroup: string;
+  productGroup: string | null;
   isResidentialAddOn: boolean;
   isExpenseAddOn: boolean;
   isCMEAddOn: boolean;
-  paymentMode: string;
+  paymentMode: string | null;
   totalInventoryItems: number;
   isAddOnSelectionRequired: boolean;
   useOnlyForBackendRegistration: boolean;
@@ -90,9 +90,9 @@ export interface ResidentialAddOn {
   unitPrice: number;
   isFull: boolean;
   totalAvailableQuantity: number;
-  inventoryUsed?: number;
-  inventoryRemaining?: number;
-  isSoldOut?: boolean;
+  inventoryUsed: number;
+  inventoryRemaining: number | null;
+  isSoldOut: boolean;
 }
 
 export interface ComplianceQuestion {
@@ -268,7 +268,8 @@ export interface WorkshopAddOnInventoryResponse {
   status: string;
   data: {
     'Residential Add On': ResidentialAddOn[];
-    _meta?: {
+    Ungrouped: ResidentialAddOn[];
+    _meta: {
       capacity: {
         hasCapacity: boolean;
         remaining: number | null;
@@ -289,11 +290,51 @@ export interface WorkshopAddOnInventoryResponse {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+// Helper function to handle API errors consistently
+export function handleApiError(error: {
+  status?: number;
+  code?: string;
+  message?: string;
+  [key: string]: unknown;
+}): never {
+  console.error('API error:', error);
+
+  // Check if this is a rate limit error (HTTP 429)
+  if (
+    error.status === 429 ||
+    (error.code && error.code === 'RATE_LIMIT_EXCEEDED')
+  ) {
+    const rateLimitError = new Error(
+      'Server busy - please try again in a few moments'
+    );
+    rateLimitError.name = 'RateLimitError';
+    // Attach original error data for reference
+    (
+      rateLimitError as unknown as { originalError: typeof error }
+    ).originalError = error;
+    throw rateLimitError;
+  }
+
+  // Just rethrow the original error
+  throw error;
+}
+
 // API functions
 export async function fetchCourse(courseId: string): Promise<CourseData> {
   try {
     const response = await fetch(`${API_BASE_URL}/workshops/${courseId}`);
     const data = await response.json();
+
+    // Check for rate limit error in the response
+    if (data.code === 'RATE_LIMIT_EXCEEDED') {
+      return handleApiError({
+        status: 429,
+        code: 'RATE_LIMIT_EXCEEDED',
+        message:
+          data.message ||
+          'Our servers are currently handling a high number of requests. Please try again shortly.',
+      });
+    }
 
     if (data.status === 'success') {
       return data.data;
@@ -302,6 +343,12 @@ export async function fetchCourse(courseId: string): Promise<CourseData> {
     throw new Error(data.message || 'Failed to fetch course');
   } catch (error) {
     console.error('Error fetching course:', error);
+
+    // Check if it's already a handled error (from handleApiError)
+    if (error instanceof Error && error.name === 'RateLimitError') {
+      throw error;
+    }
+
     throw error;
   }
 }
@@ -400,6 +447,17 @@ export async function fetchWorkshopAddOnInventory(
     );
     const data = await response.json();
 
+    // Check for rate limit error in the response
+    if (data.code === 'RATE_LIMIT_EXCEEDED') {
+      return handleApiError({
+        status: 429,
+        code: 'RATE_LIMIT_EXCEEDED',
+        message:
+          data.message ||
+          'Our servers are currently handling a high number of requests. Please try again shortly.',
+      });
+    }
+
     if (data.status === 'success') {
       return data;
     }
@@ -409,6 +467,12 @@ export async function fetchWorkshopAddOnInventory(
     );
   } catch (error) {
     console.error('Error fetching workshop add-on inventory:', error);
+
+    // Check if it's already a handled error (from handleApiError)
+    if (error instanceof Error && error.name === 'RateLimitError') {
+      throw error;
+    }
+
     throw error;
   }
 }

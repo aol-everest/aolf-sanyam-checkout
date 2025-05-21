@@ -14,6 +14,7 @@ import { CheckoutFormWithStripe } from '@/components/checkout/CheckoutFormWithSt
 import type { GetServerSideProps } from 'next';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { RECAPTCHA_SITE_KEY } from '@/config/recaptcha';
+import { useToast } from '@/hooks/use-toast';
 
 import {
   Dialog,
@@ -61,6 +62,7 @@ const CheckoutPage = ({
   const [isMounted, setIsMounted] = useState(false);
   const [stripePromise, setStripePromise] =
     useState<Promise<Stripe | null> | null>(null);
+  const { toast } = useToast();
 
   // New state for tracking if all options are sold out
   const [showSoldOutDialog, setShowSoldOutDialog] = useState(false);
@@ -148,16 +150,47 @@ const CheckoutPage = ({
             '[CheckoutPage] Failed to load add-on inventory:',
             inventoryError
           );
+
+          // Check if it's a rate limit error
+          if (
+            inventoryError instanceof Error &&
+            inventoryError.name === 'RateLimitError'
+          ) {
+            toast({
+              variant: 'destructive',
+              title: 'Server Busy',
+              description:
+                'Our servers are handling a high number of requests. Please try again shortly.',
+            });
+          }
         }
       } catch (error) {
         console.error('[CheckoutPage] Failed to load course:', error);
+
+        // Check if it's a rate limit error
+        if (error instanceof Error && error.name === 'RateLimitError') {
+          toast({
+            variant: 'destructive',
+            title: 'Server Busy',
+            description:
+              'Our servers are handling a high number of requests. Please try again shortly.',
+          });
+        } else {
+          // Show a generic error for other issues
+          toast({
+            variant: 'destructive',
+            title: 'Error Loading Course',
+            description:
+              'There was a problem loading the course details. Please refresh the page or try again later.',
+          });
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadCourse();
-  }, [courseId, initialCourse, initialAddOnInventory]);
+  }, [courseId, initialCourse, initialAddOnInventory, toast]);
 
   if (loading) {
     console.log('[CheckoutPage] Loading course details...');

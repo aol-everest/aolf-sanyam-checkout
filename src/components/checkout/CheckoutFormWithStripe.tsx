@@ -19,7 +19,23 @@ import {
 import { MainContent } from '@/components/checkout/MainContent';
 import { useRecaptcha } from '@/hooks/use-recaptcha';
 
-// The Payment Element doesn't require global state as it's managed by the Elements provider
+// Define the interface here instead of importing it
+interface ResidentialAddOnProduct {
+  sfid: string;
+  name: string;
+  productGroup: string;
+  isResidentialAddOn: boolean;
+  isExpenseAddOn: boolean;
+  isCMEAddOn: boolean;
+  paymentMode: string;
+  totalInventoryItems: number;
+  isAddOnSelectionRequired: boolean;
+  useOnlyForBackendRegistration: boolean;
+  priceBookEntryId: string;
+  unitPrice: number;
+  isFull: boolean;
+  totalAvailableQuantity: number;
+}
 
 // Simplified component that uses context for card element
 interface CheckoutFormWithStripeProps {
@@ -211,6 +227,38 @@ export const CheckoutFormWithStripe = ({
             description:
               'Your request could not be verified. Please try again or contact support if the issue persists.',
           });
+        }
+
+        // Handle payment service high traffic error (500)
+        if (
+          error.status === 500 &&
+          error.message &&
+          error.message.includes(
+            'payment service provider is currently experiencing high traffic'
+          )
+        ) {
+          toast({
+            variant: 'destructive',
+            title: 'Payment Service Busy',
+            description:
+              'Our payment service is currently experiencing high traffic. Please wait a moment and try again.',
+          });
+          throw new Error('Payment service busy - please try again shortly');
+        }
+
+        // Handle rate limit error (429)
+        if (
+          error.status === 429 ||
+          (error.code && error.code === 'RATE_LIMIT_EXCEEDED')
+        ) {
+          toast({
+            variant: 'destructive',
+            title: 'Server Busy',
+            description:
+              error.message ||
+              'Our servers are currently handling a high number of requests. Please wait a moment and try again.',
+          });
+          throw new Error('Server busy - please try again in a few moments');
         }
 
         throw new Error(
@@ -538,7 +586,13 @@ export const CheckoutFormWithStripe = ({
               setShowQuestionnaire={setShowQuestionnaire}
               onQuestionnaireSubmit={handleManualSubmit}
               loading={loading}
-              course={course}
+              course={
+                course as CourseData & {
+                  groupedAddOnProducts: {
+                    'Residential Add On': ResidentialAddOnProduct[];
+                  };
+                }
+              }
               setQuestionnaireAnswers={setQuestionnaireAnswers}
               addOnInventory={addOnInventory}
               disabled={disabled}

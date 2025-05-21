@@ -27,7 +27,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { StripePaymentWrapper } from '@/components/checkout/StripePaymentWrapper';
 import { ProgramQuestionnaire } from '@/components/checkout/ProgramQuestionnaire';
 
-interface ResidentialAddOnProduct {
+export interface ResidentialAddOnProduct {
   sfid: string;
   name: string;
   productGroup: string;
