@@ -17,6 +17,7 @@ import {
   type WorkshopAddOnInventoryResponse,
 } from '@/lib/api';
 import { MainContent } from '@/components/checkout/MainContent';
+import { useRecaptcha } from '@/hooks/use-recaptcha';
 
 // The Payment Element doesn't require global state as it's managed by the Elements provider
 
@@ -48,6 +49,7 @@ export const CheckoutFormWithStripe = ({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const formikRef = React.useRef<FormikProps<FormikFormValues>>(null);
+  const { getRecaptchaToken } = useRecaptcha();
 
   // Process payment with Payment Element
   const processPayment = async (values: FormikFormValues) => {
@@ -168,13 +170,49 @@ export const CheckoutFormWithStripe = ({
         },
       };
 
+      // Get reCAPTCHA token
+      const recaptchaAction = 'checkout_submit';
+      const recaptchaResult = await getRecaptchaToken(recaptchaAction);
+
+      if (!recaptchaResult.token) {
+        console.warn(
+          'Could not obtain reCAPTCHA token, proceeding without it',
+          recaptchaResult.error
+        );
+        toast({
+          variant: 'destructive',
+          title: 'Security Verification Issue',
+          description:
+            recaptchaResult.error?.message ||
+            'We were unable to verify your request. You may continue, but the checkout might be rejected.',
+        });
+      }
+
       // Create PaymentIntent on the server
       console.log('Creating PaymentIntent on server...');
       const checkoutResult = await submitCheckout(
         course.id,
-        checkoutData
+        checkoutData,
+        recaptchaResult.token,
+        recaptchaAction
       ).catch((error) => {
         console.error('Server checkout error:', error);
+
+        // Check if error is related to reCAPTCHA
+        if (
+          error.message &&
+          (error.message.toLowerCase().includes('recaptcha') ||
+            error.message.toLowerCase().includes('captcha') ||
+            error.message.toLowerCase().includes('verification'))
+        ) {
+          toast({
+            variant: 'destructive',
+            title: 'Security Verification Failed',
+            description:
+              'Your request could not be verified. Please try again or contact support if the issue persists.',
+          });
+        }
+
         throw new Error(
           error.message || 'Failed to process checkout. Please try again.'
         );
@@ -291,6 +329,25 @@ export const CheckoutFormWithStripe = ({
           'Payment system not initialized. Please refresh and try again.',
       });
       return;
+    }
+
+    // Verify reCAPTCHA before form submission
+    const recaptchaAction = 'checkout_form_submit';
+    const recaptchaResult = await getRecaptchaToken(recaptchaAction);
+
+    if (!recaptchaResult.token) {
+      console.warn(
+        'reCAPTCHA verification failed during form submission',
+        recaptchaResult.error
+      );
+      toast({
+        variant: 'destructive',
+        title: 'Security Verification Failed',
+        description:
+          recaptchaResult.error?.message ||
+          'We were unable to verify this form submission. Try again or contact support if the issue persists.',
+      });
+      // Continue with submission but warn the user
     }
 
     // Set loading state to show the loader

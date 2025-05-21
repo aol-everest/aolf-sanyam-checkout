@@ -333,13 +333,24 @@ export async function fetchOrder(orderId: string): Promise<OrderData> {
 
 export async function submitCheckout(
   workshopId: string,
-  data: CheckoutPayload
+  data: CheckoutPayload,
+  recaptchaToken?: string | null,
+  recaptchaAction?: string
 ): Promise<{ orderId: string; clientSecret?: string }> {
   try {
     // Create headers
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
+
+    // Add recaptcha token and action to headers if available
+    if (recaptchaToken) {
+      headers['X-Recaptcha-Token'] = recaptchaToken;
+    }
+
+    if (recaptchaAction) {
+      headers['X-Recaptcha-Action'] = recaptchaAction;
+    }
 
     // If using PaymentIntent, update endpoint
     const endpoint = `${API_BASE_URL}/checkout/workshops/async/${workshopId}`;
