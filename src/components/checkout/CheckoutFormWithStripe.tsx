@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useRouter } from 'next/router';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
+import type { StripeError } from '@stripe/stripe-js';
 import { FullScreenLoader } from '@/components/ui/loader';
 import {
   Formik,
@@ -44,7 +44,6 @@ export const CheckoutFormWithStripe = ({
 }: CheckoutFormWithStripeProps) => {
   const stripe = useStripe();
   const elements = useElements();
-  const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -100,179 +99,132 @@ export const CheckoutFormWithStripe = ({
     try {
       setIsSubmitting(true);
 
-      console.log('Using Payment Element from Stripe Elements');
-      console.log('Processing payment with Payment Element...');
-
-      try {
-        // Convert compliance answers to Yes/No strings
-        const complianceAnswers = Object.entries(
-          values.complianceAnswers
-        ).reduce((acc, [key, value]) => {
+      // Convert compliance answers to Yes/No strings
+      const complianceAnswers = Object.entries(values.complianceAnswers).reduce(
+        (acc, [key, value]) => {
           acc[key] = value ? 'Yes' : 'No';
           return acc;
-        }, {} as Record<string, string>);
+        },
+        {} as Record<string, string>
+      );
 
-        // Get program questionnaire answers (already in the right format)
-        const programQuestionnaireAnswers = values.programQuestionnaire || {};
+      // Get program questionnaire answers (already in the right format)
+      const programQuestionnaireAnswers = values.programQuestionnaire || {};
 
-        // Create checkout payload
-        const checkoutData: CheckoutPayload = {
-          payload: {
-            user: {
-              firstName: values.firstName,
-              lastName: values.lastName,
-              email: values.email,
-              phone: values.phone,
-            },
-            contactAddress: {
-              phone: values.phone,
-              address: values.address,
-              city: values.city,
-              state: values.state,
-              zip: values.zip,
-            },
-            billingAddress: {
-              phone: values.phone,
-              address: values.address,
-              city: values.city,
-              state: values.state,
-              zip: values.zip,
-            },
-            addOnProductIds: values.expenseType
-              ? [values.expenseType]
-              : undefined,
-            programQuestionnaire: (() => {
-              // Prioritize values from questionnaireAnswers (most recent)
-              // but fall back to programQuestionnaireAnswers if needed
-              const mergedData = {
-                ...programQuestionnaireAnswers, // Start with formik values
-                ...questionnaireAnswers, // Override with state values (most recent)
-              };
-
-              // Fix for backend: Send "N/A" instead of empty strings
-              // This ensures the backend knows we've processed this question
-              const finalData = Object.entries(mergedData).reduce(
-                (acc, [key, value]) => {
-                  // Replace empty strings with "N/A" to ensure data is sent
-                  acc[key] = value && value.trim() !== '' ? value : 'N/A';
-                  return acc;
-                },
-                {} as Record<string, string>
-              );
-
-              console.log(
-                'Final questionnaire data with N/A values:',
-                finalData
-              );
-              return finalData;
-            })(),
-            complianceQuestionnaire: complianceAnswers,
-            paymentTokenInfo: {
-              id: 'payment_intent', // This is a placeholder, server will create the PaymentIntent
-              provider: 'stripe-payment-intent',
-              saveForFuture: false,
-            },
+      // Create checkout payload
+      const checkoutData: CheckoutPayload = {
+        payload: {
+          user: {
+            firstName: values.firstName,
+            lastName: values.lastName,
+            email: values.email,
+            phone: values.phone,
           },
-        };
+          contactAddress: {
+            phone: values.phone,
+            address: values.address,
+            city: values.city,
+            state: values.state,
+            zip: values.zip,
+          },
+          billingAddress: {
+            phone: values.phone,
+            address: values.address,
+            city: values.city,
+            state: values.state,
+            zip: values.zip,
+          },
+          addOnProductIds: values.expenseType
+            ? [values.expenseType]
+            : undefined,
+          programQuestionnaire: (() => {
+            // Prioritize values from questionnaireAnswers (most recent)
+            // but fall back to programQuestionnaireAnswers if needed
+            const mergedData = {
+              ...programQuestionnaireAnswers, // Start with formik values
+              ...questionnaireAnswers, // Override with state values (most recent)
+            };
 
-        // Create PaymentIntent on the server
-        console.log('Creating PaymentIntent on server...');
-        const checkoutResult = await submitCheckout(course.id, checkoutData);
-
-        // Ensure we have the client secret from the PaymentIntent
-        if (!checkoutResult.clientSecret) {
-          console.error('No client secret returned from server');
-          console.log('Server response:', checkoutResult);
-          throw new Error('Failed to create payment - please try again.');
-        }
-
-        console.log('Client secret received successfully');
-
-        console.log(
-          'PaymentIntent created with orderId:',
-          checkoutResult.orderId
-        );
-
-        // Create PaymentMethod from Elements and submit to server
-        const { error: createPaymentMethodError, paymentMethod } =
-          await stripe.createPaymentMethod({
-            elements,
-            params: {
-              billing_details: {
-                name: `${values.firstName} ${values.lastName}`,
-                email: values.email,
-                phone: values.phone,
-                address: {
-                  line1: values.address,
-                  city: values.city,
-                  state: values.state,
-                  postal_code: values.zip,
-                  country: 'US', // Default to US
-                },
+            // Fix for backend: Send "N/A" instead of empty strings
+            // This ensures the backend knows we've processed this question
+            const finalData = Object.entries(mergedData).reduce(
+              (acc, [key, value]) => {
+                // Replace empty strings with "N/A" to ensure data is sent
+                acc[key] = value && value.trim() !== '' ? value : 'N/A';
+                return acc;
               },
-            },
-          });
+              {} as Record<string, string>
+            );
 
-        if (createPaymentMethodError) {
-          console.error(
-            'Error creating payment method:',
-            createPaymentMethodError
-          );
-          throw new Error(
-            createPaymentMethodError.message || 'Payment method creation failed'
-          );
-        }
+            console.log('Final questionnaire data with N/A values:', finalData);
+            return finalData;
+          })(),
+          complianceQuestionnaire: complianceAnswers,
+          paymentTokenInfo: {
+            id: 'payment_intent', // This is a placeholder, server will create the PaymentIntent
+            provider: 'stripe-payment-intent',
+            saveForFuture: false,
+          },
+        },
+      };
 
-        // Update the checkout payload with the payment method ID
-        checkoutData.payload.paymentTokenInfo.id = paymentMethod.id;
-        checkoutData.payload.paymentTokenInfo.provider =
-          'stripe-payment-method';
-
-        // Submit updated payload to server
-        console.log(
-          'Submitting payment with payment method ID:',
-          paymentMethod.id
+      // Create PaymentIntent on the server
+      console.log('Creating PaymentIntent on server...');
+      const checkoutResult = await submitCheckout(
+        course.id,
+        checkoutData
+      ).catch((error) => {
+        console.error('Server checkout error:', error);
+        throw new Error(
+          error.message || 'Failed to process checkout. Please try again.'
         );
-        const finalCheckoutResult = await submitCheckout(
-          course.id,
-          checkoutData
-        );
+      });
 
-        if (!finalCheckoutResult.orderId) {
-          throw new Error('Payment processing failed. Please try again.');
-        }
-
-        // Since we're not confirming a specific PaymentIntent, create a mock success object
-        const paymentIntent = { status: 'succeeded' };
-
-        // No confirmError check needed since we're now using createPaymentMethod
-
-        // Ensure payment was successful
-        if (paymentIntent.status !== 'succeeded') {
-          console.error('Payment not successful:', paymentIntent.status);
-          throw new Error(`Payment ${paymentIntent.status}. Please try again.`);
-        }
-
-        // Handle success
-        toast({
-          title: 'Payment Successful',
-          description: 'Your registration is complete!',
-        });
-
-        console.log(
-          'Payment successful, order ID:',
-          finalCheckoutResult.orderId
-        );
-
-        router.push(`/thankyou/${finalCheckoutResult.orderId}`);
-      } catch (stripeError) {
-        console.error('Stripe payment error:', stripeError);
-        throw stripeError;
+      // Ensure we have the client secret from the PaymentIntent
+      if (!checkoutResult.clientSecret) {
+        console.error('No client secret returned from server');
+        console.log('Server response:', checkoutResult);
+        throw new Error('Failed to create payment - please try again.');
       }
+
+      console.log('Client secret received successfully');
+      console.log(
+        'PaymentIntent created with orderId:',
+        checkoutResult.orderId
+      );
+
+      const result = await stripe.confirmPayment({
+        elements,
+        clientSecret: checkoutResult.clientSecret,
+        confirmParams: {
+          return_url: `${window.location.origin}/thankyou/${checkoutResult.orderId}`,
+        },
+      });
+
+      if (result.error) {
+        // Handle specific Stripe errors with custom messages
+        const errorMessage = getStripeErrorMessage(result.error);
+        console.error('Stripe payment error:', result.error);
+        throw new Error(errorMessage);
+      }
+
+      // Handle success
+      toast({
+        title: 'Payment Successful',
+        description: 'Your registration is complete!',
+      });
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Something went wrong';
-      console.error('Payment error:', errorMessage);
+      let errorMessage = 'Something went wrong with your payment';
+
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+
+      // Log the full error for debugging
+      console.error('Payment error:', err);
+
       toast({
         variant: 'destructive',
         title: 'Payment Failed',
@@ -281,6 +233,27 @@ export const CheckoutFormWithStripe = ({
     } finally {
       setIsSubmitting(false);
       setLoading(false);
+    }
+  };
+
+  // Helper function to provide better error messages for Stripe errors
+  const getStripeErrorMessage = (error: StripeError): string => {
+    switch (error.type) {
+      case 'card_error':
+        return error.message || 'Your card was declined';
+      case 'validation_error':
+        return 'Please check your payment details';
+      case 'invalid_request_error':
+        return 'We were unable to process your payment request';
+      case 'authentication_error':
+        return 'Authentication with the payment system failed';
+      case 'rate_limit_error':
+        return 'Too many payment attempts. Please try again later';
+      case 'api_error':
+      case 'api_connection_error':
+        return 'We cannot connect to our payment system right now. Please try again later';
+      default:
+        return error.message || 'There was an issue processing your payment';
     }
   };
 
