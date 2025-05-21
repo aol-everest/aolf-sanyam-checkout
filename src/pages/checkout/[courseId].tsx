@@ -254,8 +254,8 @@ const CheckoutPage = ({
               </DialogTitle>
               <DialogDescription>
                 {isCourseFull
-                  ? 'We&apos;re sorry, but this course has reached full capacity and is no longer available for registration. Would you like to explore other available courses?'
-                  : 'We&apos;re sorry, but all accommodation options for this course are sold out. Would you like to explore other available courses?'}
+                  ? `We're sorry, but this course has reached full capacity and is no longer available for registration. Would you like to explore other available courses?`
+                  : `We're sorry, but all accommodation options for this course are sold out. Would you like to explore other available courses?`}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="sm:justify-center mt-4">
