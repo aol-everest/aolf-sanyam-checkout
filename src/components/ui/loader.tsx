@@ -17,7 +17,7 @@ export function FullScreenLoader() {
   return (
     <div className="loading-overlay animate-in fade-in duration-500">
       <div className="overlay-loader"></div>
-      <div className="loading-text">Processing your payment...</div>
+      <div className="loading-text">Please wait...</div>
     </div>
   );
 }

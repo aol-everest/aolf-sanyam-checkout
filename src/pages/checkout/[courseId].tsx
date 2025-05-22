@@ -153,11 +153,6 @@ const CheckoutPage = (): JSX.Element => {
         setStripePromise(loadStripe(course.payment.publishableKey));
       } else {
         console.error('[CheckoutPage] No publishable key found in course data');
-        // Fallback to a default key if needed
-        const fallbackKey =
-          'pk_test_51LnTljH6DOp7WA3cYAlemahUkCBTv94b8Cv0laMT4lnEtYShNGSScumTN0oLymu54H2b6TKzPstIaihee4pRrswn00yKstyPbS';
-        console.log('[CheckoutPage] Using fallback key');
-        setStripePromise(loadStripe(fallbackKey));
       }
     }
   }, [course]);
