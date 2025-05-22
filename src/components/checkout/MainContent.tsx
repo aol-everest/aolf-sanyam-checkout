@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { parseISO, format, getDate, getMonth, getYear } from 'date-fns';
+import { parseISO, getDate, getMonth, getYear } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { Button } from '@/components/ui/button';
 import { US_STATES } from '@/components/checkout/constants';
 import type { CourseData, WorkshopAddOnInventoryResponse } from '@/lib/api';
@@ -91,8 +92,10 @@ const formatDateRange = (startDate: string, endDate: string) => {
   const start = parseISO(startDate); // e.g., '2025-05-22'
   const end = parseISO(endDate);
 
-  const startMonth = format(start, 'LLLL'); // Full month name
-  const endMonth = format(end, 'LLLL');
+  const timeZone = 'UTC'; // Ensures no local time zone shift
+
+  const startMonth = formatInTimeZone(start, timeZone, 'LLLL'); // Full month name
+  const endMonth = formatInTimeZone(end, timeZone, 'LLLL');
   const startDay = getDate(start);
   const endDay = getDate(end);
   const year = getYear(start);
@@ -702,8 +705,8 @@ export const MainContent = ({
                         <div className="value col-7">
                           {course.timings.map((timing) => (
                             <div key={timing.id}>
-                              {format(parseISO(timing.startDate), 'EEE')}:{' '}
-                              {formatTime(timing.startTime)}-
+                              {formatInTimeZone(timing.startDate, 'UTC', 'EEE')}
+                              : {formatTime(timing.startTime)}-
                               {formatTime(timing.endTime)} {timing.timeZone}
                             </div>
                           ))}
