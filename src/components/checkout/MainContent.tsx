@@ -702,11 +702,8 @@ export const MainContent = ({
                         <div className="value col-7">
                           {course.timings.map((timing) => (
                             <div key={timing.id}>
-                              {new Date(timing.startDate).toLocaleDateString(
-                                'en-US',
-                                { weekday: 'short' }
-                              )}
-                              : {formatTime(timing.startTime)}-
+                              {format(parseISO(timing.startDate), 'EEE')}:{' '}
+                              {formatTime(timing.startTime)}-
                               {formatTime(timing.endTime)} {timing.timeZone}
                             </div>
                           ))}
