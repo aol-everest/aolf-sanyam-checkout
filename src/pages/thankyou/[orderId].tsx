@@ -92,6 +92,8 @@ export default function ThankYouPage() {
                   <a
                     href="https://maps.app.goo.gl/Yuh3o1zLa5HQdNWs6"
                     target="_blank"
+                    rel="noreferrer"
+                    className="text-[#FF9361]"
                   >
                     Art of Living Retreat Center 939 Whispering Hills Road
                     Boone, NC 28607

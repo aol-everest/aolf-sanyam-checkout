@@ -835,7 +835,12 @@ export const MainContent = ({
                               className="cursor-pointer"
                             >
                               I agree to the{' '}
-                              <a href="#" className="text-[#FF9361]">
+                              <a
+                                href="https://artoflivingretreatcenter.org/program-participant-agreement/"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[#FF9361]"
+                              >
                                 Program Participant agreement
                               </a>
                               .
