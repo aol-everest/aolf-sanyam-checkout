@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { parseISO, format, getDate, getMonth, getYear } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { US_STATES } from '@/components/checkout/constants';
 import type { CourseData, WorkshopAddOnInventoryResponse } from '@/lib/api';
@@ -87,16 +88,16 @@ const formatTime = (time: string) => {
 
 // Helper function to format date range
 const formatDateRange = (startDate: string, endDate: string) => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = parseISO(startDate); // e.g., '2025-05-22'
+  const end = parseISO(endDate);
 
-  const startMonth = start.toLocaleString('en-US', { month: 'long' });
-  const endMonth = end.toLocaleString('en-US', { month: 'long' });
-  const startDay = start.getDate();
-  const endDay = end.getDate();
-  const year = start.getFullYear();
+  const startMonth = format(start, 'LLLL'); // Full month name
+  const endMonth = format(end, 'LLLL');
+  const startDay = getDate(start);
+  const endDay = getDate(end);
+  const year = getYear(start);
 
-  if (startMonth === endMonth) {
+  if (getMonth(start) === getMonth(end)) {
     return `${startMonth} ${startDay}-${endDay}, ${year}`;
   }
   return `${startMonth} ${startDay}-${endMonth} ${endDay}, ${year}`;
