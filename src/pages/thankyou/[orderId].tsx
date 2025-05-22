@@ -14,8 +14,8 @@ export default function ThankYouPage() {
                   <h1 className="get-started__title section-title">Sanyam 2</h1>
                   <p className="get-started__text">
                     Thank you for registering! Your spot for the Sanyam 2 Course
-                    starting Friday, July 11, 2025, is confirmed. We’ll notify
-                    you soon with everything you need to know.
+                    starting Wednesday, July 16, 2025, is confirmed. We’ll
+                    notify you soon with everything you need to know.
                   </p>
                 </div>
                 <p className="get-started__text">
@@ -75,27 +75,26 @@ export default function ThankYouPage() {
               <ul className="program-details__list-schedule tw-max-h-[400px] tw-overflow-y-auto mb-2">
                 <li className="program-details__schedule tw-flex">
                   <span className="program-details__schedule-date">
-                    July 11, 2025
+                    July 16-20, 2025
                   </span>
                   <span className="program-details__schedule-time tw-ml-2">
-                    Fri: 7:00AM-9:00PM EST <br />
-                    Sat: 7:00AM-9:00PM EST <br />
-                    Sun: 7:00AM-9:00PM EST <br />
-                    Mon: 7:00AM-9:00PM EST <br />
-                    Tue: 7:00AM-9:00PM EST <br />
-                    Wed: 7:00AM-9:00PM EST
+                    Wed: 3:00 PM-9:00 PM EST <br />
+                    Thu: 7:00 AM-9:00 PM EST <br />
+                    Fri: 7:00 AM-9:00 PM EST <br />
+                    Sat: 7:00 AM-9:00 PM EST <br />
+                    Sun: 7:00 AM-1:00 PM EST <br />
                   </span>
                 </li>
               </ul>
               <ul className="program-details__list-schedule tw-mt-2">
                 <span className="program-details__schedule-date">Location</span>
                 <a
-                  href="https://www.google.com/maps/search/?api=1&amp;query=949 Whispering Hills Road, Boone NC 28607 US"
+                  href="https://maps.app.goo.gl/Yuh3o1zLa5HQdNWs6"
                   target="_blank"
                   rel="noreferrer"
                 >
                   <li className="tw-truncate tw-text-sm tw-tracking-tighter !tw-text-[#3d8be8]">
-                    949 Whispering Hills Road,{' '}
+                    Art of Living Retreat Center 939 Whispering Hills Road
                   </li>
                   <li className="tw-truncate tw-text-sm tw-tracking-tighter !tw-text-[#3d8be8]">
                     Boone, NC 28607
