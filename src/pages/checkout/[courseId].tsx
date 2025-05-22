@@ -6,15 +6,15 @@ import { loadStripe, Stripe } from '@stripe/stripe-js';
 import {
   fetchCourse,
   fetchWorkshopAddOnInventory,
-  type CourseData,
   type WorkshopAddOnInventoryResponse,
 } from '@/lib/api';
 import { Toaster } from '@/components/ui/toaster';
 import { CheckoutFormWithStripe } from '@/components/checkout/CheckoutFormWithStripe';
-import type { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { RECAPTCHA_SITE_KEY } from '@/config/recaptcha';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 import {
   Dialog,
@@ -32,29 +32,10 @@ console.log('Stripe will be initialized with key from API');
 // URL to redirect users if all options are sold out
 const ALL_COURSES_URL = 'https://members.us.artofliving.org/us-en/courses';
 
-const CheckoutPage = ({
-  course: initialCourse,
-  courseId,
-  addOnInventory: initialAddOnInventory,
-}: {
-  course?: CourseData;
-  courseId: string;
-  addOnInventory?: WorkshopAddOnInventoryResponse;
-}): JSX.Element => {
-  console.log('[CheckoutPage] Props:', {
-    initialCourse,
-    courseId,
-    initialAddOnInventory,
-  });
+const CheckoutPage = (): JSX.Element => {
+  const router = useRouter();
+  const { courseId } = router.query;
 
-  const [course, setCourse] = useState<CourseData | null>(
-    initialCourse || null
-  );
-  const [addOnInventory, setAddOnInventory] =
-    useState<WorkshopAddOnInventoryResponse | null>(
-      initialAddOnInventory || null
-    );
-  const [loading, setLoading] = useState(!initialCourse);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState<
     Record<string, string>
@@ -71,6 +52,44 @@ const CheckoutPage = ({
   // State to track if the course is full (vs just add-ons sold out)
   const [isCourseFull, setIsCourseFull] = useState(false);
 
+  // Fetch course data using React Query
+  const {
+    data: course,
+    isLoading: courseLoading,
+    error: courseError,
+  } = useQuery({
+    queryKey: ['course', courseId],
+    queryFn: () => fetchCourse(courseId as string),
+    enabled: !!courseId,
+    retry: 2,
+  });
+
+  // Fetch add-on inventory using React Query - always run realtime, no caching
+  const { data: addOnInventory, error: inventoryError } =
+    useQuery<WorkshopAddOnInventoryResponse>({
+      queryKey: ['addOnInventory', courseId],
+      queryFn: async () => {
+        try {
+          console.log(
+            '[CheckoutPage] Fetching real-time inventory for:',
+            courseId
+          );
+          return await fetchWorkshopAddOnInventory(courseId as string);
+        } catch (error) {
+          console.error('[CheckoutPage] Inventory fetch error:', error);
+          // Rethrow the error to be caught by React Query's error handler
+          throw error;
+        }
+      },
+      enabled: !!courseId,
+      retry: 2,
+      // Override global settings for this specific query to always get fresh data
+      staleTime: 0, // Data is always stale
+      gcTime: 0, // Don't cache at all (previously cacheTime)
+      refetchOnMount: true, // Always refetch on component mount
+      refetchOnWindowFocus: true, // Refetch when window regains focus
+    });
+
   // Client-side only rendering
   useEffect(() => {
     setIsMounted(true);
@@ -78,8 +97,10 @@ const CheckoutPage = ({
 
   // Check if all residential options are sold out or course is full
   useEffect(() => {
+    if (!addOnInventory) return;
+
     // Check if course has no capacity
-    if (addOnInventory?.data?._meta?.capacity?.hasCapacity === false) {
+    if (addOnInventory.data?._meta?.capacity?.hasCapacity === false) {
       console.log('[CheckoutPage] Course is full, no capacity available');
       setShowSoldOutDialog(true);
       setFormDisabled(true);
@@ -87,9 +108,11 @@ const CheckoutPage = ({
     }
 
     // Check if all add-on options are sold out
-    if (addOnInventory?.data?.['Residential Add On']) {
+    if (addOnInventory.data?.['Residential Add On']) {
       const options = addOnInventory.data['Residential Add On'];
-      const allSoldOut = options.every((option) => option.isSoldOut);
+      const allSoldOut = options.every(
+        (option: { isSoldOut: boolean }) => option.isSoldOut
+      );
 
       console.log(
         '[CheckoutPage] Checking inventory: All sold out?',
@@ -139,79 +162,93 @@ const CheckoutPage = ({
     }
   }, [course]);
 
+  // Handle React Query errors
   useEffect(() => {
-    if (initialCourse) {
-      console.log('[CheckoutPage] Using initial course data');
-      return;
+    if (courseError) {
+      console.error('[CheckoutPage] Failed to load course:', courseError);
+
+      // Check if it's a rate limit error
+      if (
+        courseError instanceof Error &&
+        courseError.name === 'RateLimitError'
+      ) {
+        toast({
+          variant: 'destructive',
+          title: 'Server Busy',
+          description:
+            'Our servers are handling a high number of requests. Please try again shortly.',
+        });
+      } else if (
+        courseError instanceof Error &&
+        courseError.message.includes('network')
+      ) {
+        toast({
+          variant: 'destructive',
+          title: 'Network Error',
+          description: 'Please check your internet connection and try again.',
+        });
+      } else {
+        // Show a generic error for other issues
+        toast({
+          variant: 'destructive',
+          title: 'Error Loading Course',
+          description:
+            'There was a problem loading the course details. Please refresh the page or try again later.',
+        });
+      }
     }
 
-    const loadCourse = async () => {
-      try {
-        console.log('[CheckoutPage] Fetching course data for:', courseId);
-        const data = await fetchCourse(courseId);
-        console.log('[CheckoutPage] Fetched course data:', data);
-        setCourse(data);
+    if (inventoryError) {
+      console.error(
+        '[CheckoutPage] Failed to load add-on inventory:',
+        inventoryError
+      );
 
-        // Fetch add-on inventory after course data is loaded
-        try {
-          console.log(
-            '[CheckoutPage] Fetching add-on inventory for:',
-            courseId
-          );
-          const inventoryData = await fetchWorkshopAddOnInventory(courseId);
-          console.log(
-            '[CheckoutPage] Fetched add-on inventory:',
-            inventoryData
-          );
-          setAddOnInventory(inventoryData);
-        } catch (inventoryError) {
-          console.error(
-            '[CheckoutPage] Failed to load add-on inventory:',
-            inventoryError
-          );
-
-          // Check if it's a rate limit error
-          if (
-            inventoryError instanceof Error &&
-            inventoryError.name === 'RateLimitError'
-          ) {
-            toast({
-              variant: 'destructive',
-              title: 'Server Busy',
-              description:
-                'Our servers are handling a high number of requests. Please try again shortly.',
-            });
-          }
-        }
-      } catch (error) {
-        console.error('[CheckoutPage] Failed to load course:', error);
-
-        // Check if it's a rate limit error
-        if (error instanceof Error && error.name === 'RateLimitError') {
-          toast({
-            variant: 'destructive',
-            title: 'Server Busy',
-            description:
-              'Our servers are handling a high number of requests. Please try again shortly.',
-          });
-        } else {
-          // Show a generic error for other issues
-          toast({
-            variant: 'destructive',
-            title: 'Error Loading Course',
-            description:
-              'There was a problem loading the course details. Please refresh the page or try again later.',
-          });
-        }
-      } finally {
-        setLoading(false);
+      // Check if it's a rate limit error
+      if (
+        inventoryError instanceof Error &&
+        inventoryError.name === 'RateLimitError'
+      ) {
+        toast({
+          variant: 'destructive',
+          title: 'Server Busy',
+          description:
+            'Our servers are handling a high number of requests. Please try again shortly.',
+        });
+      } else if (
+        inventoryError instanceof Error &&
+        inventoryError.message.includes('network')
+      ) {
+        toast({
+          variant: 'destructive',
+          title: 'Network Error',
+          description:
+            'Unable to check inventory. Please check your internet connection.',
+        });
+      } else if (
+        inventoryError instanceof Error &&
+        inventoryError.message.includes('timeout')
+      ) {
+        toast({
+          variant: 'destructive',
+          title: 'Request Timeout',
+          description:
+            'The inventory check is taking longer than expected. Please try again.',
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Inventory Check Failed',
+          description:
+            'We were unable to verify availability. Please refresh or try again later.',
+        });
       }
-    };
+    }
+  }, [courseError, inventoryError, toast]);
 
-    loadCourse();
-  }, [courseId, initialCourse, initialAddOnInventory, toast]);
+  const isLoading = courseLoading || !isMounted || !courseId;
 
-  if (loading) {
+  if (isLoading) {
     console.log('[CheckoutPage] Loading course details...');
     return <FullScreenLoader />;
   }
@@ -221,7 +258,7 @@ const CheckoutPage = ({
     return <ErrorPage statusCode={404} title="Course Not Found" />;
   }
 
-  if (!isMounted || !stripePromise) {
+  if (!stripePromise) {
     return <FullScreenLoader />;
   }
 
@@ -315,46 +352,6 @@ const CheckoutPage = ({
       </div>
     </GoogleReCaptchaProvider>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { courseId } = context.params as { courseId: string };
-  console.log('[getServerSideProps] Fetching course:', courseId);
-
-  try {
-    const course = await fetchCourse(courseId);
-    console.log('[getServerSideProps] Fetched course:', course);
-
-    // Also fetch add-on inventory data during server-side rendering
-    let addOnInventory = null;
-    try {
-      addOnInventory = await fetchWorkshopAddOnInventory(courseId);
-      console.log(
-        '[getServerSideProps] Fetched add-on inventory:',
-        addOnInventory
-      );
-    } catch (inventoryError) {
-      console.error(
-        '[getServerSideProps] Failed to fetch add-on inventory:',
-        inventoryError
-      );
-    }
-
-    return {
-      props: {
-        course,
-        courseId,
-        addOnInventory,
-      },
-    };
-  } catch (error) {
-    console.error('[getServerSideProps] Failed to fetch course:', error);
-    return {
-      props: {
-        courseId,
-      },
-    };
-  }
 };
 
 export default CheckoutPage;
