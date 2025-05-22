@@ -52,6 +52,12 @@ const CheckoutPage = (): JSX.Element => {
   // State to track if the course is full (vs just add-ons sold out)
   const [isCourseFull, setIsCourseFull] = useState(false);
 
+  // State for add-on inventory
+  const [addOnInventory, setAddOnInventory] =
+    useState<WorkshopAddOnInventoryResponse | null>(null);
+  const [inventoryError, setInventoryError] = useState<Error | null>(null);
+  const [isLoadingInventory, setIsLoadingInventory] = useState(false);
+
   // Fetch course data using React Query
   const {
     data: course,
@@ -64,31 +70,31 @@ const CheckoutPage = (): JSX.Element => {
     retry: 2,
   });
 
-  // Fetch add-on inventory using React Query - always run realtime, no caching
-  const { data: addOnInventory, error: inventoryError } =
-    useQuery<WorkshopAddOnInventoryResponse>({
-      queryKey: ['addOnInventory', courseId],
-      queryFn: async () => {
-        try {
-          console.log(
-            '[CheckoutPage] Fetching real-time inventory for:',
-            courseId
-          );
-          return await fetchWorkshopAddOnInventory(courseId as string);
-        } catch (error) {
-          console.error('[CheckoutPage] Inventory fetch error:', error);
-          // Rethrow the error to be caught by React Query's error handler
-          throw error;
-        }
-      },
-      enabled: !!courseId,
-      retry: 2,
-      // Override global settings for this specific query to always get fresh data
-      staleTime: 0, // Data is always stale
-      gcTime: 0, // Don't cache at all (previously cacheTime)
-      refetchOnMount: true, // Always refetch on component mount
-      refetchOnWindowFocus: true, // Refetch when window regains focus
-    });
+  // Fetch add-on inventory directly
+  useEffect(() => {
+    const getInventory = async () => {
+      if (!courseId) return;
+
+      setIsLoadingInventory(true);
+      try {
+        console.log(
+          '[CheckoutPage] Fetching real-time inventory for:',
+          courseId
+        );
+        const data = await fetchWorkshopAddOnInventory(courseId as string);
+        setAddOnInventory(data);
+      } catch (error) {
+        console.error('[CheckoutPage] Inventory fetch error:', error);
+        setInventoryError(
+          error instanceof Error ? error : new Error(String(error))
+        );
+      } finally {
+        setIsLoadingInventory(false);
+      }
+    };
+
+    getInventory();
+  }, [courseId]);
 
   // Client-side only rendering
   useEffect(() => {
@@ -241,7 +247,8 @@ const CheckoutPage = (): JSX.Element => {
     }
   }, [courseError, inventoryError, toast]);
 
-  const isLoading = courseLoading || !isMounted || !courseId;
+  const isLoading =
+    courseLoading || !isMounted || !courseId || isLoadingInventory;
 
   if (isLoading) {
     console.log('[CheckoutPage] Loading course details...');
