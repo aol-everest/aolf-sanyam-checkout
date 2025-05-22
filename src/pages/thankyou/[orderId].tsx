@@ -88,18 +88,15 @@ export default function ThankYouPage() {
               </ul>
               <ul className="program-details__list-schedule tw-mt-2">
                 <span className="program-details__schedule-date">Location</span>
-                <a
-                  href="https://maps.app.goo.gl/Yuh3o1zLa5HQdNWs6"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <li className="tw-truncate tw-text-sm tw-tracking-tighter !tw-text-[#3d8be8]">
+                <li className="tw-truncate tw-text-sm tw-tracking-tighter !tw-text-[#3d8be8]">
+                  <a
+                    href="https://maps.app.goo.gl/Yuh3o1zLa5HQdNWs6"
+                    target="_blank"
+                  >
                     Art of Living Retreat Center 939 Whispering Hills Road
-                  </li>
-                  <li className="tw-truncate tw-text-sm tw-tracking-tighter !tw-text-[#3d8be8]">
                     Boone, NC 28607
-                  </li>
-                </a>
+                  </a>
+                </li>
               </ul>
             </div>
             <h2 className="journey-starts__title section-title">
